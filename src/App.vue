@@ -1,29 +1,31 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+    <div class="outer-wrapper">
+    <dynamic-marquee>
+     <div>
+       Hello world
+     </div>
+    </dynamic-marquee>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
-import HelloWorld from './components/HelloWorld.vue';
+import DynamicMarquee from "./components/DynamicMarquee.vue";
 
 export default Vue.extend({
   name: 'app',
   components: {
-    HelloWorld,
-  },
-});
+    DynamicMarquee,
+  }
+  });
 </script>
-
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+<style scoped>
+.outer-wrapper {
+  background-color: rebeccapurple;
+  height: 200px;
+  width:  200px;
+  border: 2px solid red;
 }
 </style>
