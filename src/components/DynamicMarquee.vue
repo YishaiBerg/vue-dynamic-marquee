@@ -1,13 +1,8 @@
 <template>
   <div class="wrapper" :style="cssVars" ref="wrapper">
-    <div class="marquee" ref="marquee">
+    <div class="marquee" :ref="`marquee`" v-for="i in repeatNum" :key="i">
       <slot></slot>
     </div>
-    <!-- <div class="marquee2" ref="marquee2">
-      <li v-for="i in 5" :key="i">
-          Item {{i}}
-        </li>
-    </div> -->
   </div>
 </template>
 
@@ -21,12 +16,17 @@ export default Vue.extend({
     pps: {
       type: Number,
       default: 20
+    },
+    repeatMargin: {
+      type: Number,
+      default: 3
     }
   },
   data() {
     return {
       wrapperHeight: 0,
-      marqueeHeight: 0
+      marqueeHeight: 0,
+      repeatNum: 2
     };
   },
   computed: {
@@ -43,40 +43,78 @@ export default Vue.extend({
       return a.getBoundingClientRect().height;
     }
   },
-  mounted() {
-    this.$nextTick(() => {
-      const wrapper = this.$refs.wrapper as HTMLElement;
-      this.wrapperHeight = wrapper.getBoundingClientRect().height;
-      const marquee = this.$refs.marquee as HTMLElement;
-      this.marqueeHeight = marquee.getBoundingClientRect().height;
-      // if(ResizeObserver) {
-      //   const resizeObserver = new ResizeObserver((enteries: any) => {
-      //     console.log(enteries)
-      //   })
-      // }
+  async mounted() {
+    await this.$nextTick();
+    const wrapper = this.$refs.wrapper as HTMLElement;
+    this.wrapperHeight = wrapper.getBoundingClientRect().height;
+    const marqueeArr = this.$refs.marquee as HTMLElement[];
+    const marquee = marqueeArr[0];
+    this.marqueeHeight = marquee.getBoundingClientRect().height;
+    const timesInWrapper = Math.ceil(
+      this.wrapperHeight / (this.marqueeHeight + this.repeatMargin)
+    ) + 1;
+    if (timesInWrapper > 2) {
+      this.repeatNum = timesInWrapper;
+    }
+    const animatedElements = [
+      {
+        element: marquee,
+        lastTime: performance.now(),
+        progress: 0
+      }
+    ];
+    const unanimatedElements: any = [];
+    await this.$nextTick();
+    for (let i = 1; i < this.repeatNum; i++) {
+      unanimatedElements.push({ element: marqueeArr[i] });
+    }
 
-      let lastTime = NaN;
-      let currentPosition = this.wrapperHeight;
-      let progress = 0;
-      const translateMarquee = (currentTime: number): void => {
-       if (lastTime) {
-         const elapsed = currentTime - lastTime;
-         const ratio = 1000 / elapsed;
-         const currentProgress = this.pps / ratio;
-         progress -= currentProgress;
-         marquee.style.transform = `translateY(${progress}px)`
-         console.log(currentProgress)
-       }
-        lastTime = currentTime;
-        if(progress > -(this.wrapperHeight + this.marqueeHeight)) {
-          requestAnimationFrame(translateMarquee)
+    const calcTranslation = (currentTime: number): void => {
+      for (let index = animatedElements.length - 1; index >= 0; index--) {
+        const elapsed = currentTime - animatedElements[index].lastTime;
+        const ratio = 1000 / elapsed;
+        const currentProgress = this.pps / ratio;
+        animatedElements[index].progress -= currentProgress;
+        console.log(animatedElements[index].progress)
+        animatedElements[
+          index
+        ].element.style.transform = `translateY(${animatedElements[index].progress}px)`;
+        animatedElements[index].lastTime = currentTime;
+        const emptyWrapperSpace =
+          -animatedElements[index].progress - this.marqueeHeight;
+        if (
+          animatedElements[index].progress <=
+          -(this.wrapperHeight + this.marqueeHeight)
+        ) {
+          animatedElements[index].element.style.transform = "none";
+          const [toUnanimate] = animatedElements.splice(index, 1);
+          unanimatedElements.push(toUnanimate);
+          // console.log(unanimatedElements);
+        } else if (
+          animatedElements.length < this.repeatNum &&
+          emptyWrapperSpace >= this.repeatMargin &&
+          index === animatedElements.length - 1
+        ) {
+          const toAnimate = unanimatedElements.shift();
+          console.log(toAnimate);
+          if (toAnimate) {
+            animatedElements.push({
+              ...toAnimate,
+              lastTime: currentTime,
+              progress: 0
+            });
+          }
         }
-      };
+      }
+
+      // console.log(emptyWrapperSpace);
+    };
+
+    const translateMarquee = (currentTime: number) => {
+      calcTranslation(currentTime);
       requestAnimationFrame(translateMarquee);
-      //* pseudo code: if (marquee not higher than wrapper) {
-              // * translate 
-      //* }
-    });
+    };
+    requestAnimationFrame(translateMarquee);
   }
 });
 </script>
@@ -109,21 +147,14 @@ export default Vue.extend({
 
 .marquee {
   top: var(--wrapper-height);
-  position: relative;
+  position: absolute;
   box-sizing: border-box;
-  animation: marquee var(--marquee-speed) linear infinite;
-}
-
-.marquee {
-  top: var(--wrapper-height);
-  position: relative;
-  box-sizing: border-box;
-  animation: marquee var(--marquee-speed) linear infinite;
+  /* animation: marquee var(--marquee-speed) linear infinite; */
 }
 
 .marquee2 {
-  top: calc(var(--wrapper-height) * 2 + 10px);
-  position: relative;
+  top: var(--wrapper-height);
+  position: absolute;
   box-sizing: border-box;
   animation: marquee 5s linear infinite;
 }

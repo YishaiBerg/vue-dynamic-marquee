@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div class="outer-wrapper">
-    <dynamic-marquee :pps="10">
+    <dynamic-marquee :pps="60">
       <ul>
         <li v-for="i in liNum" :key="i">
           Item {{i}}
@@ -23,7 +23,7 @@ export default Vue.extend({
   },
   data() {
     return {
-      liNum: 5
+      liNum: 1
     }
   },
   created () {
