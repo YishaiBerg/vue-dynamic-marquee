@@ -1,5 +1,10 @@
 <template>
-  <div class="wrapper" ref="wrapper">
+  <div
+    class="wrapper"
+    ref="wrapper"
+    @mouseenter="togglePause(true)"
+    @mouseleave="togglePause(false)"
+  >
     <div class="marquee" :ref="`marquee`" v-for="i in repeatNum" :key="i">
       <slot></slot>
     </div>
@@ -30,6 +35,10 @@ export default Vue.extend({
     repeatMargin: {
       type: Number,
       default: 5
+    },
+    hoverPause: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -39,7 +48,8 @@ export default Vue.extend({
       repeatNum: 2,
       marqueeArr: <HTMLElement[]>[],
       animatedElements: <Required<elWithAnimationData>[]>[],
-      unanimatedElements: <elWithAnimationData[]>[]
+      unanimatedElements: <elWithAnimationData[]>[],
+      pause: false
     };
   },
   computed: {},
@@ -87,7 +97,6 @@ export default Vue.extend({
       this.animatedElements[
         index
       ].element.style.transform = `translateY(${this.animatedElements[index].progress}px)`;
-      this.animatedElements[index].lastTime = currentTime;
     },
     revealNextElement(index: number, currentTime: number) {
       const emptyWrapperSpace =
@@ -117,15 +126,25 @@ export default Vue.extend({
         this.unanimatedElements.push(toUnanimate);
       }
     },
-    calcTranslation(currentTime: number){
+    updateLastTime(index: number, currentTime: number) {
+      this.animatedElements[index].lastTime = currentTime;
+    },
+    calcTranslation(currentTime: number) {
       for (let index = this.animatedElements.length - 1; index >= 0; index--) {
-        this.translateMarquee(index, currentTime);
-        this.revealNextElement(index, currentTime);
-        this.elementFinishedTranslate(index);
+        if (!this.pause) {
+          this.translateMarquee(index, currentTime);
+          this.revealNextElement(index, currentTime);
+          this.elementFinishedTranslate(index);
+        }
+        this.updateLastTime(index, currentTime);
+      }
+    },
+    togglePause(bool: boolean) {
+      // TODO: try to attach events dynamically, and check if mouseover will be better
+      if (this.hoverPause) {
+        this.pause = bool;
       }
     }
-    
-    
   },
   async mounted() {
     await this.$nextTick();
