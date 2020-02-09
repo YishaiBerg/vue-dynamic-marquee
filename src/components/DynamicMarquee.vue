@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper" :style="cssVars" ref="wrapper">
+  <div class="wrapper" ref="wrapper">
     <div class="marquee" :ref="`marquee`" v-for="i in repeatNum" :key="i">
       <slot></slot>
     </div>
@@ -9,6 +9,12 @@
 <script lang="ts">
 import Vue from "vue";
 
+interface elWithAnimationData {
+  element: HTMLElement;
+  lastTime?: number;
+  progress?: number;
+}
+
 export default Vue.extend({
   name: "dynamic-marquee",
   components: {},
@@ -17,101 +23,117 @@ export default Vue.extend({
       type: Number,
       default: 20
     },
+    repeat: {
+      type: Boolean,
+      default: true
+    },
     repeatMargin: {
       type: Number,
-      default: 3
+      default: 5
     }
   },
   data() {
     return {
       wrapperHeight: 0,
       marqueeHeight: 0,
-      repeatNum: 2
+      repeatNum: 2,
+      marqueeArr: <HTMLElement[]>[],
+      animatedElements: <Required<elWithAnimationData>[]>[],
+      unanimatedElements: <elWithAnimationData[]>[]
     };
   },
-  computed: {
-    cssVars(): object {
-      return {
-        "--wrapper-height": this.wrapperHeight + "px",
-        "--marquee-height": this.marqueeHeight + "px",
-        "--minus-marquee-height": -this.marqueeHeight + "px",
-        "--marquee-speed": this.marqueeHeight / this.pps + "s"
-      };
+  computed: {},
+  methods: {
+    calcWrapperHeight() {
+      const wrapper = this.$refs.wrapper as HTMLElement;
+      this.wrapperHeight = wrapper.getBoundingClientRect().height;
     },
-    height() {
-      const a = this.$refs.marquee as Element;
-      return a.getBoundingClientRect().height;
+    calcMarqueeHeight() {
+      this.marqueeArr = this.$refs.marquee as HTMLElement[];
+      const marquee = this.marqueeArr[0];
+      this.marqueeHeight = marquee.getBoundingClientRect().height;
+    },
+    calcHeights() {
+      this.calcWrapperHeight();
+      this.calcMarqueeHeight();
+    },
+    calcRepeatNum() {
+      const timesInWrapper =
+        Math.ceil(
+          this.wrapperHeight / (this.marqueeHeight + this.repeatMargin)
+        ) + 1;
+      if (timesInWrapper > 2) {
+        this.repeatNum = timesInWrapper;
+      }
+    },
+    async initialAnimationData() {
+      this.animatedElements = [
+        {
+          element: this.marqueeArr[0],
+          lastTime: performance.now(),
+          progress: 0
+        }
+      ];
+      await this.$nextTick();
+      for (let i = 1; i < this.repeatNum; i++) {
+        this.unanimatedElements.push({ element: this.marqueeArr[i] });
+      }
+    },
+    translateMarquee(index: number, currentTime: number) {
+      const elapsed = currentTime - this.animatedElements[index].lastTime;
+      const ratio = 1000 / elapsed;
+      const currentProgress = this.pps / ratio;
+      this.animatedElements[index].progress -= currentProgress;
+      this.animatedElements[
+        index
+      ].element.style.transform = `translateY(${this.animatedElements[index].progress}px)`;
+      this.animatedElements[index].lastTime = currentTime;
+    },
+    revealNextElement(index: number, currentTime: number) {
+      const emptyWrapperSpace =
+        -this.animatedElements[index].progress - this.marqueeHeight;
+      if (
+        this.animatedElements.length < this.repeatNum &&
+        emptyWrapperSpace >= this.repeatMargin &&
+        index === this.animatedElements.length - 1
+      ) {
+        const toAnimate = this.unanimatedElements.shift();
+        if (toAnimate) {
+          this.animatedElements.push({
+            ...toAnimate,
+            lastTime: currentTime,
+            progress: 0
+          });
+        }
+      }
+    },
+    elementFinishedTranslate(index: number) {
+      if (
+        this.animatedElements[index].progress <=
+        -(this.wrapperHeight + this.marqueeHeight)
+      ) {
+        this.animatedElements[index].element.style.transform = "none";
+        const [toUnanimate] = this.animatedElements.splice(index, 1);
+        this.unanimatedElements.push(toUnanimate);
+      }
+    },
+    calcTranslation(currentTime: number){
+      for (let index = this.animatedElements.length - 1; index >= 0; index--) {
+        this.translateMarquee(index, currentTime);
+        this.revealNextElement(index, currentTime);
+        this.elementFinishedTranslate(index);
+      }
     }
+    
+    
   },
   async mounted() {
     await this.$nextTick();
-    const wrapper = this.$refs.wrapper as HTMLElement;
-    this.wrapperHeight = wrapper.getBoundingClientRect().height;
-    const marqueeArr = this.$refs.marquee as HTMLElement[];
-    const marquee = marqueeArr[0];
-    this.marqueeHeight = marquee.getBoundingClientRect().height;
-    const timesInWrapper = Math.ceil(
-      this.wrapperHeight / (this.marqueeHeight + this.repeatMargin)
-    ) + 1;
-    if (timesInWrapper > 2) {
-      this.repeatNum = timesInWrapper;
-    }
-    const animatedElements = [
-      {
-        element: marquee,
-        lastTime: performance.now(),
-        progress: 0
-      }
-    ];
-    const unanimatedElements: any = [];
-    await this.$nextTick();
-    for (let i = 1; i < this.repeatNum; i++) {
-      unanimatedElements.push({ element: marqueeArr[i] });
-    }
-
-    const calcTranslation = (currentTime: number): void => {
-      for (let index = animatedElements.length - 1; index >= 0; index--) {
-        const elapsed = currentTime - animatedElements[index].lastTime;
-        const ratio = 1000 / elapsed;
-        const currentProgress = this.pps / ratio;
-        animatedElements[index].progress -= currentProgress;
-        console.log(animatedElements[index].progress)
-        animatedElements[
-          index
-        ].element.style.transform = `translateY(${animatedElements[index].progress}px)`;
-        animatedElements[index].lastTime = currentTime;
-        const emptyWrapperSpace =
-          -animatedElements[index].progress - this.marqueeHeight;
-        if (
-          animatedElements[index].progress <=
-          -(this.wrapperHeight + this.marqueeHeight)
-        ) {
-          animatedElements[index].element.style.transform = "none";
-          const [toUnanimate] = animatedElements.splice(index, 1);
-          unanimatedElements.push(toUnanimate);
-          // console.log(unanimatedElements);
-        } else if (
-          animatedElements.length < this.repeatNum &&
-          emptyWrapperSpace >= this.repeatMargin &&
-          index === animatedElements.length - 1
-        ) {
-          const toAnimate = unanimatedElements.shift();
-          console.log(toAnimate);
-          if (toAnimate) {
-            animatedElements.push({
-              ...toAnimate,
-              lastTime: currentTime,
-              progress: 0
-            });
-          }
-        }
-      }
-
-      // console.log(emptyWrapperSpace);
-    };
-
+    this.calcHeights();
+    this.calcRepeatNum();
+    this.initialAnimationData();
     const translateMarquee = (currentTime: number) => {
-      calcTranslation(currentTime);
+      this.calcTranslation(currentTime);
       requestAnimationFrame(translateMarquee);
     };
     requestAnimationFrame(translateMarquee);
@@ -127,38 +149,9 @@ export default Vue.extend({
   position: relative;
 }
 
-/* @keyframes marquee {
-  0% {
-    top: var(--wrapper-height);
-  }
-  100% {
-    top: var(--minus-marquee-height);
-  }
-}
-
-@keyframes marquee2 {
-  0% {
-    top: calc(var(--wrapper-height) * 2 + 10px);
-  }
-  100% {
-    top: var(--minus-marquee-height);
-  }
-} */
-
 .marquee {
-  top: var(--wrapper-height);
+  top: 100%;
   position: absolute;
   box-sizing: border-box;
-  /* animation: marquee var(--marquee-speed) linear infinite; */
-}
-
-.marquee2 {
-  top: var(--wrapper-height);
-  position: absolute;
-  box-sizing: border-box;
-  animation: marquee 5s linear infinite;
-}
-.marquee:hover {
-  animation-play-state: paused;
 }
 </style>
