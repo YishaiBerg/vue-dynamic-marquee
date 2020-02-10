@@ -24,6 +24,23 @@ export default Vue.extend({
   name: "dynamic-marquee",
   components: {},
   props: {
+    speed: {
+      type: Object,
+      default() {
+        return {
+          type: "pps",
+          number: 50
+        };
+      },
+      validator(val) {
+        return (
+          val.type &&
+          ["pps", "duration"].includes(val.type) &&
+          val.number &&
+          !isNaN(val.number)
+        );
+      }
+    },
     pps: {
       type: Number,
       default: 20
@@ -38,7 +55,7 @@ export default Vue.extend({
     },
     hoverPause: {
       type: Boolean,
-      default: false
+      default: true
     }
   },
   data() {
@@ -91,12 +108,29 @@ export default Vue.extend({
     },
     translateMarquee(index: number, currentTime: number) {
       const elapsed = currentTime - this.animatedElements[index].lastTime;
-      const ratio = 1000 / elapsed;
-      const currentProgress = this.pps / ratio;
+      const currentProgress = this.getCurrentProgress(elapsed); 
       this.animatedElements[index].progress -= currentProgress;
       this.animatedElements[
         index
       ].element.style.transform = `translateY(${this.animatedElements[index].progress}px)`;
+    },
+    ppsProgressFromElapsed(elapsed: number) {
+      const ratio = 1000 / elapsed;
+      return this.speed.number / ratio;
+    },
+    durationProgressFromElapsed(elapsed: number) {
+      const ratio = this.speed.number / elapsed;
+      return (this.wrapperHeight + this.marqueeHeight) / ratio;
+    },
+    getCurrentProgress(elapsed: number) {
+      switch (this.speed.type) {
+        case "pps":
+          return this.ppsProgressFromElapsed(elapsed);
+        case "duration":
+          return this.durationProgressFromElapsed(elapsed);
+        default:
+          return 0;
+      }
     },
     revealNextElement(index: number, currentTime: number) {
       const emptyWrapperSpace =
