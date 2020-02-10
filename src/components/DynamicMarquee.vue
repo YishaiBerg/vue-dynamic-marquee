@@ -16,8 +16,7 @@ import Vue from "vue";
 
 interface elWithAnimationData {
   element: HTMLElement;
-  lastTime?: number;
-  progress?: number;
+  progress: number;
 }
 
 export default Vue.extend({
@@ -66,7 +65,8 @@ export default Vue.extend({
       marqueeArr: <HTMLElement[]>[],
       animatedElements: <Required<elWithAnimationData>[]>[],
       unanimatedElements: <elWithAnimationData[]>[],
-      pause: false
+      pause: false,
+      lastTime: NaN
     };
   },
   computed: {},
@@ -94,21 +94,21 @@ export default Vue.extend({
       }
     },
     async initialAnimationData() {
+      this.lastTime = performance.now();
       this.animatedElements = [
         {
           element: this.marqueeArr[0],
-          lastTime: performance.now(),
           progress: 0
         }
       ];
       await this.$nextTick();
       for (let i = 1; i < this.repeatNum; i++) {
-        this.unanimatedElements.push({ element: this.marqueeArr[i] });
+        this.unanimatedElements.push({ element: this.marqueeArr[i], progress: 0 });
       }
     },
     translateMarquee(index: number, currentTime: number) {
-      const elapsed = currentTime - this.animatedElements[index].lastTime;
-      const currentProgress = this.getCurrentProgress(elapsed); 
+      const elapsed = currentTime - this.lastTime;
+      const currentProgress = this.getCurrentProgress(elapsed);
       this.animatedElements[index].progress -= currentProgress;
       this.animatedElements[
         index
@@ -144,9 +144,10 @@ export default Vue.extend({
         if (toAnimate) {
           this.animatedElements.push({
             ...toAnimate,
-            lastTime: currentTime,
             progress: 0
           });
+          // const elIndex = this.animatedElements.length - 1;
+          // this.translateMarquee(elIndex, currentTime);
         }
       }
     },
@@ -160,17 +161,14 @@ export default Vue.extend({
         this.unanimatedElements.push(toUnanimate);
       }
     },
-    updateLastTime(index: number, currentTime: number) {
-      this.animatedElements[index].lastTime = currentTime;
+    updateLastTime(currentTime: number) {
+      this.lastTime = currentTime;
     },
     calcTranslation(currentTime: number) {
       for (let index = this.animatedElements.length - 1; index >= 0; index--) {
-        if (!this.pause) {
-          this.translateMarquee(index, currentTime);
-          this.revealNextElement(index, currentTime);
-          this.elementFinishedTranslate(index);
-        }
-        this.updateLastTime(index, currentTime);
+        this.translateMarquee(index, currentTime);
+        this.revealNextElement(index, currentTime);
+        this.elementFinishedTranslate(index);
       }
     },
     togglePause(bool: boolean) {
@@ -186,7 +184,10 @@ export default Vue.extend({
     this.calcRepeatNum();
     this.initialAnimationData();
     const translateMarquee = (currentTime: number) => {
-      this.calcTranslation(currentTime);
+      if (!this.pause) {
+        this.calcTranslation(currentTime);
+      }
+      this.updateLastTime(currentTime);
       requestAnimationFrame(translateMarquee);
     };
     requestAnimationFrame(translateMarquee);
