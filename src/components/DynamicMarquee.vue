@@ -28,7 +28,7 @@ export default Vue.extend({
       default() {
         return {
           type: "pps",
-          number: 10
+          number: 50
         };
       },
       validator(val) {
@@ -184,7 +184,7 @@ export default Vue.extend({
     this.calcRepeatNum();
     this.initialAnimationData();
     const translateMarquee = (currentTime: number) => {
-      const longPause = (currentTime - this.lastTime) > 200
+      const longPause = (currentTime - this.lastTime) > 100
       if(longPause) {
         console.log(currentTime)
         console.log(currentTime - this.lastTime)
