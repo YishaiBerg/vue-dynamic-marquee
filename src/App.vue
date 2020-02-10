@@ -23,7 +23,7 @@ export default Vue.extend({
   },
   data() {
     return {
-      liNum: 1
+      liNum: 15
     }
   },
   created () {

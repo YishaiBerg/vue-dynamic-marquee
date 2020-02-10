@@ -28,7 +28,7 @@ export default Vue.extend({
       default() {
         return {
           type: "pps",
-          number: 50
+          number: 10
         };
       },
       validator(val) {
@@ -39,10 +39,6 @@ export default Vue.extend({
           !isNaN(val.number)
         );
       }
-    },
-    pps: {
-      type: Number,
-      default: 20
     },
     repeat: {
       type: Boolean,
@@ -103,7 +99,10 @@ export default Vue.extend({
       ];
       await this.$nextTick();
       for (let i = 1; i < this.repeatNum; i++) {
-        this.unanimatedElements.push({ element: this.marqueeArr[i], progress: 0 });
+        this.unanimatedElements.push({
+          element: this.marqueeArr[i],
+          progress: 0
+        });
       }
     },
     translateMarquee(index: number, currentTime: number) {
@@ -142,12 +141,12 @@ export default Vue.extend({
       ) {
         const toAnimate = this.unanimatedElements.shift();
         if (toAnimate) {
-          this.animatedElements.push({
-            ...toAnimate,
-            progress: 0
-          });
-          // const elIndex = this.animatedElements.length - 1;
-          // this.translateMarquee(elIndex, currentTime);
+          if (-this.animatedElements[index].progress < this.wrapperHeight) {
+            const newProgress = emptyWrapperSpace - this.repeatMargin;
+            toAnimate.element.style.transform = `translateY(-${newProgress}px)`;
+            toAnimate.progress = -newProgress;
+          }
+          this.animatedElements.push(toAnimate);
         }
       }
     },
@@ -158,6 +157,7 @@ export default Vue.extend({
       ) {
         this.animatedElements[index].element.style.transform = "none";
         const [toUnanimate] = this.animatedElements.splice(index, 1);
+        toUnanimate.progress = 0;
         this.unanimatedElements.push(toUnanimate);
       }
     },
@@ -184,7 +184,12 @@ export default Vue.extend({
     this.calcRepeatNum();
     this.initialAnimationData();
     const translateMarquee = (currentTime: number) => {
-      if (!this.pause) {
+      const longPause = (currentTime - this.lastTime) > 200
+      if(longPause) {
+        console.log(currentTime)
+        console.log(currentTime - this.lastTime)
+      }
+      if (!this.pause && !longPause) {
         this.calcTranslation(currentTime);
       }
       this.updateLastTime(currentTime);
