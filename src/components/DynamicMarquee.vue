@@ -57,7 +57,7 @@ export default Vue.extend({
     return {
       wrapperHeight: 0,
       marqueeHeight: 0,
-      repeatNum: 2,
+      repeatNum: 1,
       marqueeArr: <HTMLElement[]>[],
       animatedElements: <Required<elWithAnimationData>[]>[],
       unanimatedElements: <elWithAnimationData[]>[],
@@ -156,9 +156,11 @@ export default Vue.extend({
         -(this.wrapperHeight + this.marqueeHeight)
       ) {
         this.animatedElements[index].element.style.transform = "none";
-        const [toUnanimate] = this.animatedElements.splice(index, 1);
-        toUnanimate.progress = 0;
-        this.unanimatedElements.push(toUnanimate);
+        this.animatedElements[index].progress = 0;
+        if (this.repeat) {
+          const [toUnanimate] = this.animatedElements.splice(index, 1);
+          this.unanimatedElements.push(toUnanimate);
+        }
       }
     },
     updateLastTime(currentTime: number) {
@@ -167,7 +169,9 @@ export default Vue.extend({
     calcTranslation(currentTime: number) {
       for (let index = this.animatedElements.length - 1; index >= 0; index--) {
         this.translateMarquee(index, currentTime);
-        this.revealNextElement(index, currentTime);
+        if (this.repeat) {
+          this.revealNextElement(index, currentTime);
+        }
         this.elementFinishedTranslate(index);
       }
     },
@@ -181,14 +185,12 @@ export default Vue.extend({
   async mounted() {
     await this.$nextTick();
     this.calcHeights();
-    this.calcRepeatNum();
+    if (this.repeat) {
+      this.calcRepeatNum();
+    }
     this.initialAnimationData();
     const translateMarquee = (currentTime: number) => {
-      const longPause = (currentTime - this.lastTime) > 100
-      if(longPause) {
-        console.log(currentTime)
-        console.log(currentTime - this.lastTime)
-      }
+      const longPause = currentTime - this.lastTime > 100;
       if (!this.pause && !longPause) {
         this.calcTranslation(currentTime);
       }
