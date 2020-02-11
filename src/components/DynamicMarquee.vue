@@ -28,7 +28,7 @@ export default Vue.extend({
       default() {
         return {
           type: "pps",
-          number: 50
+          number: 100
         };
       },
       validator(val) {
@@ -84,10 +84,8 @@ export default Vue.extend({
       const timesInWrapper =
         Math.ceil(
           this.wrapperHeight / (this.marqueeHeight + this.repeatMargin)
-        ) + 1;
-      if (timesInWrapper > 2) {
-        this.repeatNum = timesInWrapper;
-      }
+        );
+      this.repeatNum = timesInWrapper + 1;
     },
     async initialAnimationData() {
       this.lastTime = performance.now();
