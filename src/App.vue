@@ -16,7 +16,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import DynamicMarquee from "./components/DynamicMarquee.vue";
+import DynamicMarquee from './components/DynamicMarquee.vue';
 
 export default Vue.extend({
   name: 'app',
@@ -25,10 +25,10 @@ export default Vue.extend({
   },
   data() {
     return {
-      liNum: 5
-    }
+      liNum: 5,
+    };
   },
-  created () {
+  created() {
     // setInterval(() => this.liNum++, 2000);
   },
   });
