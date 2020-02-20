@@ -9,6 +9,8 @@
       </ul>
     </dynamic-marquee>
     </div>
+    <button @click="liNum++">+</button>
+    <button @click="liNum--">-</button>
   </div>
 </template>
 
@@ -34,8 +36,8 @@ export default Vue.extend({
 <style scoped>
 .outer-wrapper {
   background-color: rebeccapurple;
-  height: 200px;
-  width:  200px;
+  height: 30vh;
+  width:  30vw;
   border: 2px solid red;
   position: absolute;
   top: 40vh;

@@ -12,7 +12,9 @@
 </template>
 
 <script lang="ts">
+/// <reference types="resize-observer-browser" />
 import Vue from "vue";
+
 
 interface elWithAnimationData {
   element: HTMLElement;
@@ -252,6 +254,24 @@ export default Vue.extend({
       this.wrapperDirection = getComputedStyle(wrapper).getPropertyValue(
         "direction"
       );
+    },
+    setResizeObserver() {
+      const resizeObserver = new ResizeObserver(this.onResize);
+      resizeObserver.observe(this.$refs.wrapper as HTMLElement);
+      const marqueeArr = this.$refs.marquee as HTMLElement[];
+      resizeObserver.observe(marqueeArr[0]);
+    },
+    onResize(entries: ReadonlyArray<ResizeObserverEntry>) {
+      console.log(entries);
+      // if (entries[0].target.isEqualNode(this.$refs.wrapper)) {
+      //   console.log("wrapper");
+      // } else if (entries[0].target.isEqualNode(this.$refs.marquee[0])) {
+      //   this.calcDimensions();
+      //   if (this.repeat) {
+      //     this.calcRepeatNum();
+      //   }
+      //   this.initialAnimationData()
+      // }
     }
   },
   async mounted() {
@@ -262,6 +282,7 @@ export default Vue.extend({
       this.calcRepeatNum();
     }
     this.initialAnimationData();
+    this.setResizeObserver();
     const translateMarquee = (currentTime: number) => {
       const longPause = currentTime - this.lastTime > 100;
       if (!this.pause && !longPause) {
