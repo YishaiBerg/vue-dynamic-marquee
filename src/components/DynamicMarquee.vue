@@ -5,81 +5,99 @@
     @mouseenter="togglePause(true)"
     @mouseleave="togglePause(false)"
   >
-    <div class="marquee" :ref="`marquee`" :style="initialPosition" v-for="i in repeatNum" :key="i">
+    <dynamic-marquee-element
+      v-for="el in allElements"
+      :key="el.id"
+      ref="marqueeComponents"
+      :progress="el.progress"
+      :direction="direction"
+      :reverse="reverse"
+      :wrapperDirection="wrapperDirection"
+    >
       <slot></slot>
-    </div>
+    </dynamic-marquee-element>
   </div>
 </template>
 
 <script lang="ts">
 /// <reference types="resize-observer-browser" />
-import Vue from 'vue';
+import Vue from "vue";
+import DynamicMarqueeElement from "./DynamicMarqueeElement.vue";
 
-
-interface elWithAnimationData {
-  element: HTMLElement;
+interface ProgressElement {
   progress: number;
+  id: number;
 }
 
 export default Vue.extend({
-  name: 'dynamic-marquee',
-  components: {},
+  name: "dynamic-marquee",
+  components: {
+    DynamicMarqueeElement
+  },
   props: {
     speed: {
       type: Object,
       default() {
         return {
-          type: 'pps',
-          number: 100,
+          type: "pps",
+          number: 100
         };
       },
       validator(val) {
         return (
           val.type &&
-          ['pps', 'duration'].includes(val.type) &&
+          ["pps", "duration"].includes(val.type) &&
           val.number &&
           !isNaN(val.number)
         );
-      },
+      }
     },
     repeat: {
       type: Boolean,
-      default: true,
+      default: true
     },
     repeatMargin: {
       type: Number,
-      default: 5,
+      default: 5
     },
     hoverPause: {
       type: Boolean,
-      default: true,
+      default: true
     },
     direction: {
       type: String,
-      default: 'column',
+      default: "column",
       validator(val) {
-        return ['column', 'row'].includes(val);
-      },
+        return ["column", "row"].includes(val);
+      }
     },
     reverse: {
       type: Boolean,
-      default: false,
-    },
+      default: false
+    }
   },
   data() {
     return {
       wrapperDimension: 0,
       marqueeDimension: 0,
-      wrapperDirection: '',
+      wrapperDirection: "",
       repeatNum: 1,
-      marqueeArr: <HTMLElement[] > [],
-      animatedElements: <Array<Required<elWithAnimationData>>>[],
-      unanimatedElements: <elWithAnimationData[]>[],
+      marqueeElement: <HTMLElement | null>null,
+      animatedElements: <ProgressElement[]>[
+        {
+          progress: 0,
+          id: 0
+        }
+      ],
+      unanimatedElements: <ProgressElement[]>[],
       pause: false,
       lastTime: NaN
     };
   },
   computed: {
+    allElements(): ProgressElement[] {
+      return [...this.animatedElements, ...this.unanimatedElements];
+    },
     dimension() {
       switch (this.direction) {
         case "row":
@@ -89,41 +107,16 @@ export default Vue.extend({
           return "height";
       }
     },
-    axis() {
-      switch  (this.direction) {
-        case "row":
-          return "X";
-        case "column":
-        default:
-          return "Y";
-      }
-    },
     sign() {
-      if  (this.direction === "row") {
+      if (this.direction === "row") {
         return this.reverse ? "-" : "+";
       } else {
         return this.reverse ? "+" : "-";
       }
-    },
-    initialPosition(): object {
-      if  (this.direction === "row") {
-        if  (
-          (this.wrapperDirection === "ltr" && !this.reverse) ||
-          (this.wrapperDirection === "rtl" && this.reverse)
-        ) {
-          return { right:  "100%" };
-        } else return { left:  "100%" };
-      } else {
-        if  (this.reverse) {
-          return { bottom:  "100%" };
-        } else {
-          return { top:  "100%" };
-        }
-      }
     }
   },
   methods: {
-    positivise(num:  number) {
+    positivise(num: number) {
       return Math.sign(num) * num;
     },
     signNum(num: number) {
@@ -134,12 +127,15 @@ export default Vue.extend({
       this.wrapperDimension = wrapper.getBoundingClientRect()[this.dimension];
     },
     calcMarqueeDimension() {
-      this.marqueeArr = this.$refs.marquee as HTMLElement[]; 
-      const marquee = this.marqueeArr[0];
-      this.marqueeDimension = marquee.getBoundingClientRect()[this.dimension];
+      const marqueeComponentArr = this.$refs.marqueeComponents as Vue[];
+      this.marqueeElement = marqueeComponentArr[0].$refs
+        .marqueeElement as HTMLElement;
+      this.marqueeDimension = this.marqueeElement.getBoundingClientRect()[
+        this.dimension
+      ];
     },
     calcDimensions() {
-      this.calcWrapperDimension(); 
+      this.calcWrapperDimension();
       this.calcMarqueeDimension();
     },
     calcRepeatNum() {
@@ -149,19 +145,13 @@ export default Vue.extend({
       this.repeatNum = timesInWrapper + 1;
     },
     async initialAnimationData() {
-      this.lastTime = performance.now(); 
-      this.animatedElements = [
-        {
-          element:  this.marqueeArr[0],
-          progress: 0
-        }
-      ];
+      this.lastTime = performance.now();
       await this.$nextTick();
-      for (let i = 1; i < this.repeatNum;  i++) {
+      for (let i = 1; i < this.repeatNum; i++) {
         this.unanimatedElements.push({
-          element: this.marqueeArr[i],
           progress: 0,
-        }); 
+          id: i
+        });
       }
     },
     translateMarquee(index: number, currentTime: number) {
@@ -170,10 +160,6 @@ export default Vue.extend({
       const signedCurrentProgress = this.signNum(currentProgress);
 
       this.animatedElements[index].progress += signedCurrentProgress;
-
-      this.animatedElements[
-        index
-      ].element.style.transform = `translate${this.axis}(${this.animatedElements[index].progress}px)`;
     },
     ppsProgressFromElapsed(elapsed: number) {
       const ratio = 1000 / elapsed;
@@ -184,7 +170,7 @@ export default Vue.extend({
       return (this.wrapperDimension + this.marqueeDimension) / ratio;
     },
     getCurrentProgress(elapsed: number) {
-      switch  (this.speed.type) {
+      switch (this.speed.type) {
         case "pps":
           return this.ppsProgressFromElapsed(elapsed);
         case "duration":
@@ -204,26 +190,25 @@ export default Vue.extend({
       ) {
         const toAnimate = this.unanimatedElements.shift();
         if (toAnimate) {
-          if  (
+          if (
             this.positivise(this.animatedElements[index].progress) <
             this.wrapperDimension
           ) {
             const newProgress = this.signNum(
               emptyWrapperSpace - this.repeatMargin
             );
-            toAnimate.element.style.transform = `translateY(${newProgress}px)`;
             toAnimate.progress = +newProgress;
           }
+          // console.log(toAnimate)
           this.animatedElements.push(toAnimate);
         }
       }
     },
     elementFinishedTranslate(index: number) {
-      if  (
+      if (
         this.positivise(this.animatedElements[index].progress) >=
         this.wrapperDimension + this.marqueeDimension
       ) {
-        this.animatedElements[index].element.style.transform = 'none'; 
         this.animatedElements[index].progress = 0;
         if (this.repeat) {
           const [toUnanimate] = this.animatedElements.splice(index, 1);
@@ -232,21 +217,21 @@ export default Vue.extend({
       }
     },
     updateLastTime(currentTime: number) {
-      this.lastTime = currentTime; 
+      this.lastTime = currentTime;
     },
     calcTranslation(currentTime: number) {
-      for  (let index = this.animatedElements.length - 1; index >= 0; index--) {
-        this.translateMarquee(index, currentTime); 
+      for (let index = this.animatedElements.length - 1; index >= 0; index--) {
+        this.translateMarquee(index, currentTime);
         if (this.repeat) {
-          this.revealNextElement(index, currentTime); 
+          this.revealNextElement(index, currentTime);
         }
         this.elementFinishedTranslate(index);
       }
     },
     togglePause(bool: boolean) {
       // TODO: try to attach events dynamically, and check if mouseover will be better
-      if  (this.hoverPause) {
-        this.pause = bool; 
+      if (this.hoverPause) {
+        this.pause = bool;
       }
     },
     setWrapperDirection() {
@@ -258,11 +243,11 @@ export default Vue.extend({
     setResizeObserver() {
       const resizeObserver = new ResizeObserver(this.onResize);
       resizeObserver.observe(this.$refs.wrapper as HTMLElement);
-      const marqueeArr = this.$refs.marquee as HTMLElement[];
-      resizeObserver.observe(marqueeArr[0]);
+      // const marqueeArr = this.$refs.marquee as HTMLElement[];
+      // resizeObserver.observe(marqueeArr[0]);
     },
     onResize(entries: ReadonlyArray<ResizeObserverEntry>) {
-      console.log(entries); 
+      console.log(entries);
       // if (entries[0].target.isEqualNode(this.$refs.wrapper)) {
       //   console.log("wrapper");
       // } else if (entries[0].target.isEqualNode(this.$refs.marquee[0])) {
@@ -275,18 +260,18 @@ export default Vue.extend({
     }
   },
   async mounted() {
-    await this.$nextTick(); 
+    await this.$nextTick();
     this.calcDimensions();
     this.setWrapperDirection();
     if (this.repeat) {
-      this.calcRepeatNum(); 
+      this.calcRepeatNum();
     }
     this.initialAnimationData();
     this.setResizeObserver();
     const translateMarquee = (currentTime: number) => {
       const longPause = currentTime - this.lastTime > 100;
       if (!this.pause && !longPause) {
-        this.calcTranslation(currentTime); 
+        this.calcTranslation(currentTime);
       }
       this.updateLastTime(currentTime);
       requestAnimationFrame(translateMarquee);
@@ -306,6 +291,5 @@ export default Vue.extend({
 
 .marquee {
   position: absolute;
-  box-sizing: border-box;
 }
 </style>
