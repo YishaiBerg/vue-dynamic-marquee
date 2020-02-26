@@ -253,19 +253,23 @@ export default Vue.extend({
         } else if (entry.target.isEqualNode(this.marqueeElement)) {
           const newDimension = entry.contentRect[this.dimension];
           const difference = this.marqueeDimension - newDimension;
+          this.pause = true;
           for (let i = this.animatedElements.length - 1; i > 0; i--) {
-            console.log(this.animatedElements[i].progress);
+            // console.log(this.animatedElements[i].progress);
             this.animatedElements[i].progress += this.signNum(difference) * i;
-            console.log(this.animatedElements[i].progress);
+            // console.log(this.animatedElements[i].progress);
             // TODO: still has bugs
             if (this.animatedElements[i].progress <= 0) {
               const [toUnanimate] = this.animatedElements.splice(i, 1);
               console.log(i);
-              if (i < 2) {
+              if (!this.unanimatedElements.length) {
+                console.log("push");
+                console.log(this.animatedElements, this.unanimatedElements);
                 this.unanimatedElements.push(toUnanimate);
               }
             }
           }
+          this.pause = false;
           this.marqueeDimension = newDimension;
         }
       });
