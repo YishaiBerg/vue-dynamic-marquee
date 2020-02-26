@@ -199,7 +199,6 @@ export default Vue.extend({
             );
             toAnimate.progress = +newProgress;
           }
-          // console.log(toAnimate)
           this.animatedElements.push(toAnimate);
         }
       }
@@ -243,20 +242,33 @@ export default Vue.extend({
     setResizeObserver() {
       const resizeObserver = new ResizeObserver(this.onResize);
       resizeObserver.observe(this.$refs.wrapper as HTMLElement);
-      // const marqueeArr = this.$refs.marquee as HTMLElement[];
-      // resizeObserver.observe(marqueeArr[0]);
+      if (this.marqueeElement) {
+        resizeObserver.observe(this.marqueeElement);
+      }
     },
     onResize(entries: ReadonlyArray<ResizeObserverEntry>) {
-      console.log(entries);
-      // if (entries[0].target.isEqualNode(this.$refs.wrapper)) {
-      //   console.log("wrapper");
-      // } else if (entries[0].target.isEqualNode(this.$refs.marquee[0])) {
-      //   this.calcDimensions();
-      //   if (this.repeat) {
-      //     this.calcRepeatNum();
-      //   }
-      //   this.initialAnimationData()
-      // }
+      entries.forEach(entry => {
+        if (entry.target.isEqualNode(this.$refs.wrapper as Node)) {
+          console.log("wrapper");
+        } else if (entry.target.isEqualNode(this.marqueeElement)) {
+          const newDimension = entry.contentRect[this.dimension];
+          const difference = this.marqueeDimension - newDimension;
+          for (let i = this.animatedElements.length - 1; i > 0; i--) {
+            console.log(this.animatedElements[i].progress);
+            this.animatedElements[i].progress += this.signNum(difference) * i;
+            console.log(this.animatedElements[i].progress);
+            // TODO: still has bugs
+            if (this.animatedElements[i].progress <= 0) {
+              const [toUnanimate] = this.animatedElements.splice(i, 1);
+              console.log(i);
+              if (i < 2) {
+                this.unanimatedElements.push(toUnanimate);
+              }
+            }
+          }
+          this.marqueeDimension = newDimension;
+        }
+      });
     }
   },
   async mounted() {

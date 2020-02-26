@@ -25,12 +25,9 @@ export default Vue.extend({
   },
   data() {
     return {
-      liNum: 5,
+      liNum: 1,
     };
-  },
-  created() {
-    // setInterval(() => this.liNum++, 2000);
-  },
+  }
   });
 </script>
 <style scoped>
