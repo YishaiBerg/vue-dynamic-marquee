@@ -91,7 +91,9 @@ export default Vue.extend({
       ],
       unanimatedElements: <ProgressElement[]>[],
       pause: false,
-      lastTime: NaN
+      lastTime: NaN,
+      resizeElementId: 0,
+      resizeObserver: <ResizeObserver | null>null
     };
   },
   computed: {
@@ -240,10 +242,10 @@ export default Vue.extend({
       );
     },
     setResizeObserver() {
-      const resizeObserver = new ResizeObserver(this.onResize);
-      resizeObserver.observe(this.$refs.wrapper as HTMLElement);
+      this.resizeObserver = new ResizeObserver(this.onResize);
+      this.resizeObserver.observe(this.$refs.wrapper as HTMLElement);
       if (this.marqueeElement) {
-        resizeObserver.observe(this.marqueeElement);
+        this.resizeObserver.observe(this.marqueeElement);
       }
     },
     onResize(entries: ReadonlyArray<ResizeObserverEntry>) {
@@ -260,8 +262,22 @@ export default Vue.extend({
             // console.log(this.animatedElements[i].progress);
             // TODO: still has bugs
             if (this.animatedElements[i].progress <= 0) {
+              if (
+                this.unanimatedElements.length &&
+                this.animatedElements[i].id === this.resizeElementId
+              ) {
+                this.resizeObserver!.unobserve(this.marqueeElement!);
+                const marqueeComponentArr = this.$refs
+                  .marqueeComponents as Vue[];
+                this.marqueeElement = marqueeComponentArr[1].$refs
+                  .marqueeElement as HTMLElement;
+              }
+              this.resizeObserver!.observe(this.marqueeElement!);
+              this.resizeElementId++;
               const [toUnanimate] = this.animatedElements.splice(i, 1);
               console.log(i);
+              console.log(this.animatedElements);
+              console.log(this.$refs.marqueeComponents);
               if (!this.unanimatedElements.length) {
                 console.log("push");
                 console.log(this.animatedElements, this.unanimatedElements);
