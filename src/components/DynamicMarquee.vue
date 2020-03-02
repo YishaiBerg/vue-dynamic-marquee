@@ -83,6 +83,7 @@ export default Vue.extend({
       marqueeDimension: 0,
       wrapperDirection: "",
       repeatNum: 1,
+      lastId: 0,
       marqueeElement: <HTMLElement | null>null,
       animatedElements: <ProgressElement[]>[
         {
@@ -147,7 +148,7 @@ export default Vue.extend({
       const timesInWrapper = Math.ceil(
         this.wrapperDimension / (this.marqueeDimension + this.repeatMargin)
       );
-      this.repeatNum = timesInWrapper + 1;
+      return timesInWrapper + 1;
     },
     async initialAnimationData() {
       this.lastTime = performance.now();
@@ -158,6 +159,7 @@ export default Vue.extend({
           id: i
         });
       }
+      this.lastId = this.repeatNum - 1;
     },
     translateMarquee(index: number, currentTime: number) {
       const elapsed = currentTime - this.lastTime;
@@ -271,15 +273,33 @@ export default Vue.extend({
           }
           this.pause = false;
           this.marqueeDimension = newDimension;
+          this.addOrRemoveElements()
         }
       });
+    },
+    addOrRemoveElements() {
+      const newRepeatNum = this.calcRepeatNum();
+      const difference = newRepeatNum - this.repeatNum;
+      console.log(difference);
+      if (difference > 0) {
+        for (let i = 0; i < difference; i++) {
+          this.unanimatedElements.push({
+            progress: 0,
+            id: ++this.lastId
+          });
+          console.log(this.lastId)
+        }
+      } else if (difference < 0) {
+
+      }
+      this.repeatNum = newRepeatNum;
     },
     updateObservedElement(index: number) {
       if (
         this.unanimatedElements.length &&
         this.animatedElements[index].id === this.resizeElementId
       ) {
-        console.log(index)
+        console.log(index);
         this.resizeObserver!.unobserve(this.marqueeElement!);
         this.updateResizeId();
         this.observeNewElement();
@@ -305,7 +325,7 @@ export default Vue.extend({
     this.calcDimensions();
     this.setWrapperDirection();
     if (this.repeat) {
-      this.calcRepeatNum();
+      this.repeatNum = this.calcRepeatNum();
     }
     this.initialAnimationData();
     this.setResizeObserver();
