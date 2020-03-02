@@ -256,12 +256,14 @@ export default Vue.extend({
     onResize(entries: ReadonlyArray<ResizeObserverEntry>) {
       entries.forEach(entry => {
         if (entry.target.isEqualNode(this.$refs.wrapper as Node)) {
+          this.pause = true;
           this.calcWrapperDimension();
           this.addOrRemoveElements();
+          this.pause = false;
         } else if (entry.target.isEqualNode(this.marqueeElement)) {
+          this.pause = true;
           const newDimension = entry.contentRect[this.dimension];
           const difference = this.marqueeDimension - newDimension;
-          this.pause = true;
           for (let i = this.animatedElements.length - 1; i > 0; i--) {
             this.animatedElements[i].progress += this.signNum(difference) * i;
             this.moveMinusToUnanimated(i);
@@ -280,30 +282,32 @@ export default Vue.extend({
       }
     },
     addOrRemoveElements() {
-      const newRepeatNum = this.calcRepeatNum();
-      const difference = newRepeatNum - this.repeatNum;
-      console.log(difference);
-      if (difference > 0) {
-        for (let i = 0; i < difference; i++) {
-          // TODO: verify this is necessary
-          const arr = this.animatedElements.length
-            ? "unanimatedElements"
-            : "animatedElements";
-          this[arr].push({
-            progress: 0,
-            id: ++this.lastId
-          });
-          console.log(arr)
-        }
-      } else if (difference < 0) {
-        for (let i = 0; i > difference; i--) {
-          if (this.unanimatedElements.length) {
-            this.updateObservedElement(this.unanimatedElements.length - 1);
-            this.unanimatedElements.pop();
+      if (this.repeat) {
+        const newRepeatNum = this.calcRepeatNum();
+        const difference = newRepeatNum - this.repeatNum;
+        console.log(difference);
+        if (difference > 0) {
+          for (let i = 0; i < difference; i++) {
+            // TODO: verify this is necessary
+            const arr = this.animatedElements.length
+              ? "unanimatedElements"
+              : "animatedElements";
+            this[arr].push({
+              progress: 0,
+              id: ++this.lastId
+            });
+            console.log(arr);
+          }
+        } else if (difference < 0) {
+          for (let i = 0; i > difference; i--) {
+            if (this.unanimatedElements.length) {
+              this.updateObservedElement(this.unanimatedElements.length - 1);
+              this.unanimatedElements.pop();
+            }
           }
         }
+        this.repeatNum = newRepeatNum;
       }
-      this.repeatNum = newRepeatNum;
     },
     updateObservedElement(index: number) {
       if (
