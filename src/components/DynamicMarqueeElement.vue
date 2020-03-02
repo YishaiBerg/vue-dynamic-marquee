@@ -14,6 +14,7 @@ import Vue from "vue";
 export default Vue.extend({
   name: "dynamic-marquee-element",
   props: {
+    id: Number,
     progress: Number,
     direction: {
       type: String,

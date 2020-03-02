@@ -13,6 +13,7 @@
       :direction="direction"
       :reverse="reverse"
       :wrapperDirection="wrapperDirection"
+      :id="el.id"
     >
       <slot></slot>
     </dynamic-marquee-element>
@@ -93,11 +94,13 @@ export default Vue.extend({
       pause: false,
       lastTime: NaN,
       resizeElementId: 0,
-      resizeObserver: <ResizeObserver | null>null
+      resizeObserver: <ResizeObserver | null>null,
+      deletedElements: <number[]>[]
     };
   },
   computed: {
     allElements(): ProgressElement[] {
+      // TODO: check if it continuasly renders elements. optional solution: sort by id - shouldn't change much.
       return [...this.animatedElements, ...this.unanimatedElements];
     },
     dimension() {
@@ -257,30 +260,11 @@ export default Vue.extend({
           const difference = this.marqueeDimension - newDimension;
           this.pause = true;
           for (let i = this.animatedElements.length - 1; i > 0; i--) {
-            // console.log(this.animatedElements[i].progress);
             this.animatedElements[i].progress += this.signNum(difference) * i;
-            // console.log(this.animatedElements[i].progress);
-            // TODO: still has bugs
             if (this.animatedElements[i].progress <= 0) {
-              if (
-                this.unanimatedElements.length &&
-                this.animatedElements[i].id === this.resizeElementId
-              ) {
-                this.resizeObserver!.unobserve(this.marqueeElement!);
-                const marqueeComponentArr = this.$refs
-                  .marqueeComponents as Vue[];
-                this.marqueeElement = marqueeComponentArr[1].$refs
-                  .marqueeElement as HTMLElement;
-              }
-              this.resizeObserver!.observe(this.marqueeElement!);
-              this.resizeElementId++;
+              this.updateObservedElement(i);
               const [toUnanimate] = this.animatedElements.splice(i, 1);
-              console.log(i);
-              console.log(this.animatedElements);
-              console.log(this.$refs.marqueeComponents);
               if (!this.unanimatedElements.length) {
-                console.log("push");
-                console.log(this.animatedElements, this.unanimatedElements);
                 this.unanimatedElements.push(toUnanimate);
               }
             }
@@ -289,6 +273,31 @@ export default Vue.extend({
           this.marqueeDimension = newDimension;
         }
       });
+    },
+    updateObservedElement(index: number) {
+      if (
+        this.unanimatedElements.length &&
+        this.animatedElements[index].id === this.resizeElementId
+      ) {
+        console.log(index)
+        this.resizeObserver!.unobserve(this.marqueeElement!);
+        this.updateResizeId();
+        this.observeNewElement();
+      }
+    },
+    updateResizeId() {
+      let newId = this.resizeElementId;
+      do {
+        newId++;
+      } while (this.deletedElements.includes(newId));
+      this.deletedElements.push(this.resizeElementId);
+      this.resizeElementId = newId;
+    },
+    observeNewElement() {
+      const marqueeComponentArr = this.$refs.marqueeComponents as Vue[];
+      this.marqueeElement = marqueeComponentArr[1].$refs
+        .marqueeElement as HTMLElement;
+      this.resizeObserver!.observe(this.marqueeElement!);
     }
   },
   async mounted() {
