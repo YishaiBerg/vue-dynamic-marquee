@@ -256,7 +256,8 @@ export default Vue.extend({
     onResize(entries: ReadonlyArray<ResizeObserverEntry>) {
       entries.forEach(entry => {
         if (entry.target.isEqualNode(this.$refs.wrapper as Node)) {
-          console.log("wrapper");
+          this.calcWrapperDimension();
+          this.addOrRemoveElements();
         } else if (entry.target.isEqualNode(this.marqueeElement)) {
           const newDimension = entry.contentRect[this.dimension];
           const difference = this.marqueeDimension - newDimension;
@@ -272,11 +273,11 @@ export default Vue.extend({
       });
     },
     moveMinusToUnanimated(index: number) {
-       if (this.animatedElements[index].progress <= 0) {
-              this.animatedElements[index].progress = 0;
-              const [toUnanimate] = this.animatedElements.splice(index, 1);
-              this.unanimatedElements.push(toUnanimate);
-            }
+      if (this.animatedElements[index].progress <= 0) {
+        this.animatedElements[index].progress = 0;
+        const [toUnanimate] = this.animatedElements.splice(index, 1);
+        this.unanimatedElements.push(toUnanimate);
+      }
     },
     addOrRemoveElements() {
       const newRepeatNum = this.calcRepeatNum();
@@ -284,21 +285,31 @@ export default Vue.extend({
       console.log(difference);
       if (difference > 0) {
         for (let i = 0; i < difference; i++) {
-          this.unanimatedElements.push({
+          // TODO: verify this is necessary
+          const arr = this.animatedElements.length
+            ? "unanimatedElements"
+            : "animatedElements";
+          this[arr].push({
             progress: 0,
             id: ++this.lastId
           });
+          console.log(arr)
         }
       } else if (difference < 0) {
         for (let i = 0; i > difference; i--) {
-          this.updateObservedElement(this.unanimatedElements.length - 1);
-          this.unanimatedElements.pop();
+          if (this.unanimatedElements.length) {
+            this.updateObservedElement(this.unanimatedElements.length - 1);
+            this.unanimatedElements.pop();
+          }
         }
       }
       this.repeatNum = newRepeatNum;
     },
     updateObservedElement(index: number) {
-      if (this.unanimatedElements[index].id === this.resizeElementId) {
+      if (
+        this.unanimatedElements[index] &&
+        this.unanimatedElements[index].id === this.resizeElementId
+      ) {
         console.log(index);
         this.resizeObserver!.unobserve(this.marqueeElement!);
         this.updateResizeId();
