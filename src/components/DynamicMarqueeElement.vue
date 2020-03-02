@@ -56,9 +56,9 @@ export default Vue.extend({
         } else return { left: "100%" };
       } else {
         if (this.reverse) {
-          return { bottom: "100%" };
-        } else {
           return { top: "100%" };
+        } else {
+          return { bottom: "100%" };
         }
       }
     },

@@ -114,11 +114,7 @@ export default Vue.extend({
       }
     },
     sign() {
-      if (this.direction === "row") {
-        return this.reverse ? "-" : "+";
-      } else {
-        return this.reverse ? "+" : "-";
-      }
+      return this.reverse ? "-" : "+";
     }
   },
   methods: {
@@ -275,7 +271,9 @@ export default Vue.extend({
       });
     },
     moveMinusToUnanimated(index: number) {
-      if (this.animatedElements[index].progress <= 0) {
+      const beyondWrapper =
+        Math.sign(this.animatedElements[index].progress) !== +(this.sign + 1);
+      if (beyondWrapper) {
         this.animatedElements[index].progress = 0;
         const [toUnanimate] = this.animatedElements.splice(index, 1);
         this.unanimatedElements.push(toUnanimate);
@@ -285,7 +283,6 @@ export default Vue.extend({
       if (this.repeat) {
         const newRepeatNum = this.calcRepeatNum();
         const difference = newRepeatNum - this.repeatNum;
-        console.log(difference);
         if (difference > 0) {
           for (let i = 0; i < difference; i++) {
             // TODO: verify this is necessary
@@ -296,7 +293,6 @@ export default Vue.extend({
               progress: 0,
               id: ++this.lastId
             });
-            console.log(arr);
           }
         } else if (difference < 0) {
           for (let i = 0; i > difference; i--) {
@@ -314,7 +310,6 @@ export default Vue.extend({
         this.unanimatedElements[index] &&
         this.unanimatedElements[index].id === this.resizeElementId
       ) {
-        console.log(index);
         this.resizeObserver!.unobserve(this.marqueeElement!);
         this.updateResizeId();
         this.observeNewElement();
