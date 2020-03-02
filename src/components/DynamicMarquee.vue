@@ -263,19 +263,20 @@ export default Vue.extend({
           this.pause = true;
           for (let i = this.animatedElements.length - 1; i > 0; i--) {
             this.animatedElements[i].progress += this.signNum(difference) * i;
-            if (this.animatedElements[i].progress <= 0) {
-              this.updateObservedElement(i);
-              const [toUnanimate] = this.animatedElements.splice(i, 1);
-              if (!this.unanimatedElements.length) {
-                this.unanimatedElements.push(toUnanimate);
-              }
-            }
+            this.moveMinusToUnanimated(i);
           }
-          this.pause = false;
           this.marqueeDimension = newDimension;
-          this.addOrRemoveElements()
+          this.addOrRemoveElements();
+          this.pause = false;
         }
       });
+    },
+    moveMinusToUnanimated(index: number) {
+       if (this.animatedElements[index].progress <= 0) {
+              this.animatedElements[index].progress = 0;
+              const [toUnanimate] = this.animatedElements.splice(index, 1);
+              this.unanimatedElements.push(toUnanimate);
+            }
     },
     addOrRemoveElements() {
       const newRepeatNum = this.calcRepeatNum();
@@ -287,18 +288,17 @@ export default Vue.extend({
             progress: 0,
             id: ++this.lastId
           });
-          console.log(this.lastId)
         }
       } else if (difference < 0) {
-
+        for (let i = 0; i > difference; i--) {
+          this.updateObservedElement(this.unanimatedElements.length - 1);
+          this.unanimatedElements.pop();
+        }
       }
       this.repeatNum = newRepeatNum;
     },
     updateObservedElement(index: number) {
-      if (
-        this.unanimatedElements.length &&
-        this.animatedElements[index].id === this.resizeElementId
-      ) {
+      if (this.unanimatedElements[index].id === this.resizeElementId) {
         console.log(index);
         this.resizeObserver!.unobserve(this.marqueeElement!);
         this.updateResizeId();
