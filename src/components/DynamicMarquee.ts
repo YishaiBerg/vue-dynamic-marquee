@@ -1,7 +1,7 @@
 
 /// <reference types="resize-observer-browser" />
-import Vue, { VNode } from "vue";
-import DynamicMarqueeElement from "./DynamicMarqueeElement";
+import Vue, { VNode } from 'vue';
+import DynamicMarqueeElement from './DynamicMarqueeElement';
 
 interface ProgressElement {
   progress: number;
@@ -9,72 +9,72 @@ interface ProgressElement {
 }
 
 export default Vue.extend({
-  name: "dynamic-marquee",
+  name: 'dynamic-marquee',
   components: {
-    DynamicMarqueeElement
+    DynamicMarqueeElement,
   },
   props: {
     speed: {
       type: Object,
       default() {
         return {
-          type: "pps",
-          number: 100
+          type: 'pps',
+          number: 100,
         };
       },
       validator(val) {
         return (
           val.type &&
-          ["pps", "duration"].includes(val.type) &&
+          ['pps', 'duration'].includes(val.type) &&
           val.number &&
           !isNaN(val.number)
         );
-      }
+      },
     },
     repeat: {
       type: Boolean,
-      default: true
+      default: true,
     },
     repeatMargin: {
       type: Number,
-      default: 5
+      default: 5,
     },
     hoverPause: {
       type: Boolean,
-      default: true
+      default: true,
     },
     direction: {
       type: String,
-      default: "column",
+      default: 'column',
       validator(val) {
-        return ["column", "row"].includes(val);
-      }
+        return ['column', 'row'].includes(val);
+      },
     },
     reverse: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data() {
     return {
       wrapperDimension: 0,
       marqueeDimension: 0,
-      wrapperDirection: "",
+      wrapperDirection: '',
       repeatNum: 1,
       lastId: 0,
-      marqueeElement: <HTMLElement | null>null,
-      animatedElements: <ProgressElement[]>[
+      marqueeElement: null as HTMLElement | null,
+      animatedElements: [
         {
           progress: 0,
-          id: 0
-        }
-      ],
-      unanimatedElements: <ProgressElement[]>[],
+          id: 0,
+        },
+      ] as ProgressElement[],
+      unanimatedElements: [] as ProgressElement[],
       pause: false,
       lastTime: NaN,
       resizeElementId: 0,
-      resizeObserver: <ResizeObserver | null>null,
-      deletedElements: <number[]>[]
+      resizeObserver: null as ResizeObserver | null,
+      deletedElements: [] as number[],
     };
   },
   computed: {
@@ -83,16 +83,16 @@ export default Vue.extend({
     },
     dimension() {
       switch (this.direction) {
-        case "row":
-          return "width";
-        case "column":
+        case 'row':
+          return 'width';
+        case 'column':
         default:
-          return "height";
+          return 'height';
       }
     },
     sign() {
-      return this.reverse ? "-" : "+";
-    }
+      return this.reverse ? '-' : '+';
+    },
   },
   methods: {
     positivise(num: number) {
@@ -119,7 +119,7 @@ export default Vue.extend({
     },
     calcRepeatNum() {
       const timesInWrapper = Math.ceil(
-        this.wrapperDimension / (this.marqueeDimension + this.repeatMargin)
+        this.wrapperDimension / (this.marqueeDimension + this.repeatMargin),
       );
       return timesInWrapper + 1;
     },
@@ -129,7 +129,7 @@ export default Vue.extend({
       for (let i = 1; i < this.repeatNum; i++) {
         this.unanimatedElements.push({
           progress: 0,
-          id: i
+          id: i,
         });
       }
       this.lastId = this.repeatNum - 1;
@@ -151,9 +151,9 @@ export default Vue.extend({
     },
     getCurrentProgress(elapsed: number) {
       switch (this.speed.type) {
-        case "pps":
+        case 'pps':
           return this.ppsProgressFromElapsed(elapsed);
-        case "duration":
+        case 'duration':
           return this.durationProgressFromElapsed(elapsed);
         default:
           return 0;
@@ -175,7 +175,7 @@ export default Vue.extend({
             this.wrapperDimension
           ) {
             const newProgress = this.signNum(
-              emptyWrapperSpace - this.repeatMargin
+              emptyWrapperSpace - this.repeatMargin,
             );
             toAnimate.progress = +newProgress;
           }
@@ -208,12 +208,12 @@ export default Vue.extend({
       }
     },
     togglePauseFunc(bool: boolean, ev: Event | undefined) {
-      return (bool: boolean, ev: Event | undefined) => {
+      return (b: boolean, e: Event | undefined) => {
         // TODO: try to attach events dynamically, and check if mouseover will be better
-        if (ev) {
-          ev.stopPropagation();
+        if (e) {
+          e.stopPropagation();
           if (this.hoverPause) {
-            this.pause = bool;
+            this.pause = b;
           }
         }
       };
@@ -221,7 +221,7 @@ export default Vue.extend({
     setWrapperDirection() {
       const wrapper = this.$refs.wrapper as HTMLElement;
       this.wrapperDirection = getComputedStyle(wrapper).getPropertyValue(
-        "direction"
+        'direction',
       );
     },
     setResizeObserver() {
@@ -232,7 +232,7 @@ export default Vue.extend({
       }
     },
     onResize(entries: ReadonlyArray<ResizeObserverEntry>) {
-      entries.forEach(entry => {
+      entries.forEach((entry) => {
         if (entry.target.isEqualNode(this.$refs.wrapper as Node)) {
           this.pause = true;
           this.calcWrapperDimension();
@@ -269,11 +269,11 @@ export default Vue.extend({
           for (let i = 0; i < difference; i++) {
             // TODO: verify this is necessary
             const arr = this.animatedElements.length
-              ? "unanimatedElements"
-              : "animatedElements";
+              ? 'unanimatedElements'
+              : 'animatedElements';
             this[arr].push({
               progress: 0,
-              id: ++this.lastId
+              id: ++this.lastId,
             });
           }
         } else if (difference < 0) {
@@ -310,7 +310,7 @@ export default Vue.extend({
       this.marqueeElement = marqueeComponentArr[1].$refs
         .marqueeElement as HTMLElement;
       this.resizeObserver!.observe(this.marqueeElement!);
-    }
+    },
   },
   async mounted() {
     await this.$nextTick();
@@ -333,37 +333,37 @@ export default Vue.extend({
   },
   render(h): VNode {
     return h(
-      "div",
+      'div',
       {
-        ref: "wrapper",
+        ref: 'wrapper',
         style: {
-          overflow: "hidden",
-          height: "100%",
-          width: "100%",
-          position: "relative"
+          overflow: 'hidden',
+          height: '100%',
+          width: '100%',
+          position: 'relative',
         },
         on: {
           mouseenter: this.togglePauseFunc(true, event),
-          mouseleave: this.togglePauseFunc(false, event)
-        }
+          mouseleave: this.togglePauseFunc(false, event),
+        },
       },
-      this.allElements.map(el => {
+      this.allElements.map((el) => {
         return h(
           DynamicMarqueeElement,
           {
-            ref: "marqueeComponents",
+            ref: 'marqueeComponents',
             refInFor: true,
             key: el.id,
             props: {
               progress: el.progress,
               direction: this.direction,
               reverse: this.reverse,
-              wrapperDirection: this.wrapperDirection
-            }
+              wrapperDirection: this.wrapperDirection,
+            },
           },
-          this.$slots.default
+          this.$slots.default,
         );
-      })
+      }),
     );
   },
 });

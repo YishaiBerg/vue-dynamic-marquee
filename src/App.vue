@@ -27,7 +27,7 @@ export default Vue.extend({
     return {
       liNum: 1,
     };
-  }
+  },
   });
 </script>
 <style scoped>

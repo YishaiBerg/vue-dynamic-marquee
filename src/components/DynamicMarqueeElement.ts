@@ -1,75 +1,75 @@
-import Vue, { VNode } from "vue";
+import Vue, { VNode } from 'vue';
 
 export default Vue.extend({
-  name: "dynamic-marquee-element",
+  name: 'dynamic-marquee-element',
   props: {
     id: Number,
     progress: Number,
     direction: {
       type: String,
-      default: "column",
+      default: 'column',
       validator(val) {
-        return ["column", "row"].includes(val);
-      }
+        return ['column', 'row'].includes(val);
+      },
     },
     reverse: {
       type: Boolean,
-      default: false
+      default: false,
     },
     wrapperDirection: {
       type: String,
-      default: "ltr",
+      default: 'ltr',
       validator(val) {
-        return ["ltr", "rtl", ""].includes(val);
-      }
-    }
+        return ['ltr', 'rtl', ''].includes(val);
+      },
+    },
   },
   computed: {
 
     axis(): string {
       switch (this.direction) {
-        case "row":
-          return "X";
-        case "column":
+        case 'row':
+          return 'X';
+        case 'column':
         default:
-          return "Y";
+          return 'Y';
       }
     },
     initialPosition(): object {
-      if (this.direction === "row") {
+      if (this.direction === 'row') {
         if (
-          (this.wrapperDirection === "ltr" && !this.reverse) ||
-          (this.wrapperDirection === "rtl" && this.reverse)
+          (this.wrapperDirection === 'ltr' && !this.reverse) ||
+          (this.wrapperDirection === 'rtl' && this.reverse)
         ) {
-          return { right: "100%" };
-        } else return { left: "100%" };
+          return { right: '100%' };
+        } else { return { left: '100%' }; }
       } else {
         if (this.reverse) {
-          return { top: "100%" };
+          return { top: '100%' };
         } else {
-          return { bottom: "100%" };
+          return { bottom: '100%' };
         }
       }
     },
     transform(): object {
       return {
-        transform: `translate${this.axis}(${this.progress}px)`
+        transform: `translate${this.axis}(${this.progress}px)`,
       };
-    }
+    },
   },
   render(h): VNode {
     return h(
       'div',
       {
-        ref: "marqueeElement",
+        ref: 'marqueeElement',
         style: {
-          position: "absolute",
+          position: 'absolute',
           ...this.initialPosition,
-          ...this.transform
-        }
+          ...this.transform,
+        },
       },
-      this.$slots.default
-    )
+      this.$slots.default,
+    );
 
-  }
+  },
 });
