@@ -23,7 +23,7 @@
 <script lang="ts">
 /// <reference types="resize-observer-browser" />
 import Vue from "vue";
-import DynamicMarqueeElement from "./DynamicMarqueeElement.vue";
+import DynamicMarqueeElement from "./DynamicMarqueeElement";
 
 interface ProgressElement {
   progress: number;

@@ -1,15 +1,4 @@
-<template>
-  <div
-    ref="marqueeElement"
-    style="position: absolute;"
-    :style="{...initialPosition, ...transform}"
-  >
-    <slot></slot>
-  </div>
-</template>
-
-<script lang="ts">
-import Vue from "vue";
+import Vue, { VNode } from "vue";
 
 export default Vue.extend({
   name: "dynamic-marquee-element",
@@ -36,7 +25,7 @@ export default Vue.extend({
     }
   },
   computed: {
-    
+
     axis(): string {
       switch (this.direction) {
         case "row":
@@ -67,6 +56,20 @@ export default Vue.extend({
         transform: `translate${this.axis}(${this.progress}px)`
       };
     }
+  },
+  render(h): VNode {
+    return h(
+      'div',
+      {
+        ref: "marqueeElement",
+        style: {
+          position: "absolute",
+          ...this.initialPosition,
+          ...this.transform
+        }
+      },
+      this.$slots.default
+    )
+
   }
 });
-</script>
