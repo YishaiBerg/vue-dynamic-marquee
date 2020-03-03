@@ -1,28 +1,6 @@
-<template>
-  <div
-    class="wrapper"
-    ref="wrapper"
-    @mouseenter="togglePause(true)"
-    @mouseleave="togglePause(false)"
-  >
-    <dynamic-marquee-element
-      v-for="el in allElements"
-      :key="el.id"
-      ref="marqueeComponents"
-      :progress="el.progress"
-      :direction="direction"
-      :reverse="reverse"
-      :wrapperDirection="wrapperDirection"
-      :id="el.id"
-    >
-      <slot></slot>
-    </dynamic-marquee-element>
-  </div>
-</template>
 
-<script lang="ts">
 /// <reference types="resize-observer-browser" />
-import Vue from "vue";
+import Vue, { VNode } from "vue";
 import DynamicMarqueeElement from "./DynamicMarqueeElement";
 
 interface ProgressElement {
@@ -101,7 +79,6 @@ export default Vue.extend({
   },
   computed: {
     allElements(): ProgressElement[] {
-      // TODO: check if it continuasly renders elements. optional solution: sort by id - shouldn't change much.
       return [...this.animatedElements, ...this.unanimatedElements];
     },
     dimension() {
@@ -230,11 +207,16 @@ export default Vue.extend({
         this.elementFinishedTranslate(index);
       }
     },
-    togglePause(bool: boolean) {
-      // TODO: try to attach events dynamically, and check if mouseover will be better
-      if (this.hoverPause) {
-        this.pause = bool;
-      }
+    togglePauseFunc(bool: boolean, ev: Event | undefined) {
+      return (bool: boolean, ev: Event | undefined) => {
+        // TODO: try to attach events dynamically, and check if mouseover will be better
+        if (ev) {
+          ev.stopPropagation();
+          if (this.hoverPause) {
+            this.pause = bool;
+          }
+        }
+      };
     },
     setWrapperDirection() {
       const wrapper = this.$refs.wrapper as HTMLElement;
@@ -348,19 +330,40 @@ export default Vue.extend({
       requestAnimationFrame(translateMarquee);
     };
     requestAnimationFrame(translateMarquee);
-  }
+  },
+  render(h): VNode {
+    return h(
+      "div",
+      {
+        ref: "wrapper",
+        style: {
+          overflow: "hidden",
+          height: "100%",
+          width: "100%",
+          position: "relative"
+        },
+        on: {
+          mouseenter: this.togglePauseFunc(true, event),
+          mouseleave: this.togglePauseFunc(false, event)
+        }
+      },
+      this.allElements.map(el => {
+        return h(
+          DynamicMarqueeElement,
+          {
+            ref: "marqueeComponents",
+            refInFor: true,
+            key: el.id,
+            props: {
+              progress: el.progress,
+              direction: this.direction,
+              reverse: this.reverse,
+              wrapperDirection: this.wrapperDirection
+            }
+          },
+          this.$slots.default
+        );
+      })
+    );
+  },
 });
-</script>
-
-<style scoped>
-.wrapper {
-  overflow: hidden;
-  height: 100%;
-  width: 100%;
-  position: relative;
-}
-
-.marquee {
-  position: absolute;
-}
-</style>

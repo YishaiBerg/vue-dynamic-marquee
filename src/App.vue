@@ -16,7 +16,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import DynamicMarquee from './components/DynamicMarquee.vue';
+import DynamicMarquee from './components/DynamicMarquee';
 
 export default Vue.extend({
   name: 'app',
