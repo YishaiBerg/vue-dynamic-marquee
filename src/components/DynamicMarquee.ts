@@ -207,16 +207,18 @@ export default Vue.extend({
         this.elementFinishedTranslate(index);
       }
     },
-    togglePauseFunc(bool: boolean, ev: Event | undefined) {
-      return (b: boolean, e: Event | undefined) => {
-        // TODO: try to attach events dynamically, and check if mouseover will be better
-        if (e) {
-          e.stopPropagation();
-          if (this.hoverPause) {
-            this.pause = b;
-          }
+    togglePause(event: Event) {
+      // TODO: try to attach events dynamically, and check if mouseover will be better
+      event.stopPropagation();
+      if (this.hoverPause) {
+        switch (event.type) {
+          case 'mouseenter':
+            this.pause = true;
+            break;
+          case 'mouseleave':
+            this.pause = false;
         }
-      };
+      }
     },
     setWrapperDirection() {
       const wrapper = this.$refs.wrapper as HTMLElement;
@@ -232,14 +234,12 @@ export default Vue.extend({
       }
     },
     onResize(entries: ReadonlyArray<ResizeObserverEntry>) {
+      this.pause = true;
       entries.forEach((entry) => {
         if (entry.target.isEqualNode(this.$refs.wrapper as Node)) {
-          this.pause = true;
           this.calcWrapperDimension();
           this.addOrRemoveElements();
-          this.pause = false;
         } else if (entry.target.isEqualNode(this.marqueeElement)) {
-          this.pause = true;
           const newDimension = entry.contentRect[this.dimension];
           const difference = this.marqueeDimension - newDimension;
           for (let i = this.animatedElements.length - 1; i > 0; i--) {
@@ -248,8 +248,8 @@ export default Vue.extend({
           }
           this.marqueeDimension = newDimension;
           this.addOrRemoveElements();
-          this.pause = false;
         }
+        this.pause = false;
       });
     },
     moveMinusToUnanimated(index: number) {
@@ -343,8 +343,8 @@ export default Vue.extend({
           position: 'relative',
         },
         on: {
-          mouseenter: this.togglePauseFunc(true, event),
-          mouseleave: this.togglePauseFunc(false, event),
+          mouseenter: this.togglePause,
+          mouseleave: this.togglePause,
         },
       },
       this.allElements.map((el) => {
