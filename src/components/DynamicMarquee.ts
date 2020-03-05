@@ -193,7 +193,7 @@ export default Vue.extend({
         this.wrapperDimension + this.marqueeDimension
       ) {
         this.animatedElements[index].progress = 0;
-        if (this.repeat) {
+        if (this.repeat && this.wrapperDimension > this.repeatMargin) {
           const [toUnanimate] = this.animatedElements.splice(index, 1);
           this.unanimatedElements.push(toUnanimate);
         }
