@@ -43,6 +43,10 @@ export default Vue.extend({
       type: Boolean,
       default: true,
     },
+    pause: {
+      type: Boolean,
+      default: false,
+    },
     direction: {
       type: String,
       default: 'column',
@@ -70,7 +74,7 @@ export default Vue.extend({
         },
       ] as ProgressElement[],
       unanimatedElements: [] as ProgressElement[],
-      pause: false,
+      pauseInner: false,
       lastTime: NaN,
       resizeElementId: 0,
       resizeObserver: null as ResizeObserver | null,
@@ -213,10 +217,10 @@ export default Vue.extend({
       if (this.hoverPause) {
         switch (event.type) {
           case 'mouseenter':
-            this.pause = true;
+            this.pauseInner = true;
             break;
           case 'mouseleave':
-            this.pause = false;
+            this.pauseInner = false;
         }
       }
     },
@@ -234,7 +238,7 @@ export default Vue.extend({
       }
     },
     onResize(entries: ReadonlyArray<ResizeObserverEntry>) {
-      this.pause = true;
+      this.pauseInner = true;
       entries.forEach((entry) => {
         if (entry.target.isEqualNode(this.$refs.wrapper as Node)) {
           this.calcWrapperDimension();
@@ -249,7 +253,7 @@ export default Vue.extend({
           this.marqueeDimension = newDimension;
           this.addOrRemoveElements();
         }
-        this.pause = false;
+        this.pauseInner = false;
       });
     },
     moveMinusToUnanimated(index: number) {
@@ -323,7 +327,7 @@ export default Vue.extend({
     this.setResizeObserver();
     const translateMarquee = (currentTime: number) => {
       const longPause = currentTime - this.lastTime > 100;
-      if (!this.pause && !longPause) {
+      if (!this.pause && !this.pauseInner && !longPause) {
         this.calcTranslation(currentTime);
       }
       this.updateLastTime(currentTime);
