@@ -333,6 +333,9 @@ export default Vue.extend({
     };
     requestAnimationFrame(translateMarquee);
   },
+  beforeDestroy() {
+    this.resizeObserver?.disconnect();
+  },
   render(h): VNode {
     return h(
       'div',
