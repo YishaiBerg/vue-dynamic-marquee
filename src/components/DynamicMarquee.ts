@@ -212,8 +212,6 @@ export default Vue.extend({
       }
     },
     togglePause(event: Event) {
-      // TODO: try to attach events dynamically, and check if mouseover will be better
-      event.stopPropagation();
       if (this.hoverPause) {
         switch (event.type) {
           case 'mouseenter':
