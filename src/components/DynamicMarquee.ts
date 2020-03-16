@@ -79,6 +79,12 @@ export default Vue.extend({
       resizeElementId: 0,
       resizeObserver: null as ResizeObserver | null,
       deletedElements: [] as number[],
+      testData: {
+        inTest: false,
+        wrapperDimension: 120,
+        marqueeDimension: 20,
+        wrapperDirection: 'ltr',
+      },
     };
   },
   computed: {
@@ -107,15 +113,23 @@ export default Vue.extend({
     },
     calcWrapperDimension() {
       const wrapper = this.$refs.wrapper as HTMLElement;
-      this.wrapperDimension = wrapper.getBoundingClientRect()[this.dimension];
+      if (this.testData.inTest) {
+        this.wrapperDimension = this.testData.wrapperDimension;
+      } else {
+        this.wrapperDimension = wrapper.getBoundingClientRect()[this.dimension];
+      }
     },
     calcMarqueeDimension() {
       const marqueeComponentArr = this.$refs.marqueeComponents as Vue[];
       this.marqueeElement = marqueeComponentArr[0].$refs
         .marqueeElement as HTMLElement;
-      this.marqueeDimension = this.marqueeElement.getBoundingClientRect()[
-        this.dimension
-      ];
+      if (this.testData.inTest) {
+        this.marqueeDimension = this.testData.marqueeDimension;
+      } else {
+        this.marqueeDimension = this.marqueeElement.getBoundingClientRect()[
+          this.dimension
+        ];
+      }
     },
     calcDimensions() {
       this.calcWrapperDimension();
@@ -223,10 +237,14 @@ export default Vue.extend({
       }
     },
     setWrapperDirection() {
-      const wrapper = this.$refs.wrapper as HTMLElement;
-      this.wrapperDirection = getComputedStyle(wrapper).getPropertyValue(
-        'direction',
-      );
+      if (this.testData.inTest) {
+        this.wrapperDirection = this.testData.wrapperDirection;
+      } else {
+        const wrapper = this.$refs.wrapper as HTMLElement;
+        this.wrapperDirection = getComputedStyle(wrapper).getPropertyValue(
+          'direction',
+        );
+      }
     },
     setResizeObserver() {
       this.resizeObserver = new ResizeObserver(this.onResize);
@@ -322,7 +340,9 @@ export default Vue.extend({
       this.repeatNum = this.calcRepeatNum();
     }
     this.initialAnimationData();
-    this.setResizeObserver();
+    if (!this.testData.inTest) {
+      this.setResizeObserver();
+    }
     const translateMarquee = (currentTime: number) => {
       const longPause = currentTime - this.lastTime > 100;
       if (!this.pause && !this.pauseInner && !longPause) {

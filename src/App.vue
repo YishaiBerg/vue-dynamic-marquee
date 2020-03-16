@@ -1,16 +1,16 @@
 <template>
   <div id="app">
     <div class="outer-wrapper">
-    <dynamic-marquee direction="column" reverse>
-      <ul>
-        <li v-for="i in liNum" :key="i">
-          Item {{i}}
-        </li>
-      </ul>
-    </dynamic-marquee>
+      <dynamic-marquee direction="column" reverse>
+        <ul>
+          <li v-for="i in liNum" :key="i">Item {{i}}</li>
+        </ul>
+      </dynamic-marquee>
     </div>
-    <button @click="liNum++">+</button>
-    <button @click="liNum--">-</button>
+    <div class="btns">
+      <button @click="liNum++">+</button>
+      <button @click="liNum--">-</button>
+    </div>
   </div>
 </template>
 
@@ -28,13 +28,13 @@ export default Vue.extend({
       liNum: 1,
     };
   },
-  });
+});
 </script>
 <style scoped>
 .outer-wrapper {
   background-color: rebeccapurple;
   height: 30vh;
-  width:  30vw;
+  width: 30vw;
   border: 2px solid red;
   position: absolute;
   top: 40vh;
