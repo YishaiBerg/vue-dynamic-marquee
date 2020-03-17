@@ -24,6 +24,10 @@ describe('DynamicMarquee', () => {
         propsData: {
             repeatMargin: 1,
             direction: 'row',
+            speed: {
+                type: 'duration',
+                number: 1000,
+            },
         },
         data() {
             return {
@@ -51,12 +55,58 @@ describe('DynamicMarquee', () => {
 
 
     it('should call raf', () => {
-        rafStub.step(100);
+
+        const furthestElement = wrapper.vm.animatedElements[0];
+        rafStub.step();
         expect(spyRaf).toBeCalled();
     });
 
+    it('should progress correctly on speed:{type: "duration"}', () => {
+        rafStub.step();
+        const furthestElement = wrapper.vm.animatedElements[0];
+        const currentProgress = furthestElement.progress;
+        console.log(currentProgress);
+        rafStub.step(6);
+        expect(spyRaf).toHaveBeenCalledTimes(9);
+        const totalDistance = wrapper.vm.wrapperDimension + wrapper.vm.marqueeDimension;
+        // * raf is called in raf-stub at 1000 / 60 ms TODO: assert that
+        const expectedProgress = totalDistance / 60 * 6;
+
+        expect(furthestElement.progress).toBeCloseTo(expectedProgress + currentProgress);
+    });
+
+    it('should progress correctly on speed:{type: "pps"}', () => {
+        wrapper.setProps({
+            speed: {
+                type: 'pps',
+                number: 1,
+            },
+        });
+        rafStub.step();
+        const firstElement = wrapper.vm.animatedElements[wrapper.vm.animatedElements.length - 1];
+        const currentProgress = firstElement.progress;
+        console.log(currentProgress);
+        rafStub.step(60);
+        expect(firstElement.progress).toBeCloseTo(currentProgress + 1);
+    });
+
     it('should reanimate elements', () => {
+        wrapper.setProps({
+            speed: {
+                type: 'duration',
+                number: 1000,
+            },
+        });
+        rafStub.step(100);
+        console.log(wrapper.html())
         expect(wrapper.vm.animatedElements.length).toBeGreaterThanOrEqual(4);
+    });
+
+    it('elements should not exceed wrapper completely', () => {
+        const progressArr = wrapper.vm.animatedElements.map((el) => Math.floor(el.progress));
+        const exceedsNum = wrapper.vm.wrapperDimension + wrapper.vm.wrapperDimension;
+        const exceeds = progressArr.some((el) => el > exceedsNum);
+        expect(exceeds).toBe(false);
     });
 
     it('should keep repeatMargin distance between animated elements', () => {
