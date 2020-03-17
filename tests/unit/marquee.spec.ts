@@ -48,18 +48,17 @@ describe('DynamicMarquee', () => {
         const elStyle = marqueeElement.attributes('style');
         expect(elStyle).toEqual(expect.stringContaining('right: 100%'));
     });
-    
-    
+
+
     it('should call raf', () => {
         rafStub.step(100);
-        console.log(wrapper.html())
         expect(spyRaf).toBeCalled();
     });
-    
+
     it('should reanimate elements', () => {
         expect(wrapper.vm.animatedElements.length).toBeGreaterThanOrEqual(4);
     });
-    
+
     it('should keep repeatMargin distance between animated elements', () => {
         const progressArr = wrapper.vm.animatedElements.map((el) => Math.floor(el.progress));
         let lastVal = progressArr[0];
@@ -72,7 +71,37 @@ describe('DynamicMarquee', () => {
             lastVal = progressArr[i];
         }
         expect(wrongMargin).toBe(false);
+    });
+
+    it('should pause when paused programmaticly', () => {
+        const before = JSON.stringify(wrapper.vm.animatedElements);
+        wrapper.setProps({ pause: true });
+        rafStub.step();
+        const after = JSON.stringify(wrapper.vm.animatedElements);
+        expect(before).toBe(after);
+
+        wrapper.setProps({ pause: false });
+        rafStub.step();
+        const afterNoPause = JSON.stringify(wrapper.vm.animatedElements);
+        expect(after).not.toBe(afterNoPause);
+
+    });
+
+    it('should pause on mouseenter and unpause on mouseleave', () => {
+        const before = JSON.stringify(wrapper.vm.animatedElements);
+        const rootDiv = wrapper.find('div');
+        rootDiv.trigger('mouseenter');
+        rafStub.step();
+        const after = JSON.stringify(wrapper.vm.animatedElements);
+        expect(before).toBe(after);
+
+        rootDiv.trigger('mouseleave');
+        rafStub.step();
+        const afterNoPause = JSON.stringify(wrapper.vm.animatedElements);
+        expect(after).not.toBe(afterNoPause);
+
         wrapper.destroy();
     });
+
 
 });
