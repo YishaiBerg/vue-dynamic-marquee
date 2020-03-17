@@ -22,6 +22,7 @@ describe('DynamicMarquee', () => {
 
     const wrapper = mount(DynamicMarquee, {
         propsData: {
+            repeat: false,
             repeatMargin: 1,
             direction: 'row',
             speed: {
@@ -41,31 +42,59 @@ describe('DynamicMarquee', () => {
         },
     });
 
-    // TODO: test with repeat = false
-    it('should duplicate slots as necessary', () => {
-        expect(wrapper.vm.$data.repeatNum).toBe(5);
+    it('not duplicate slots if {repeat: false}', () => {
+        expect(wrapper.vm.$data.repeatNum).toBe(1);
+        expect(wrapper.vm.animatedElements.length).toBe(1);
+        expect(wrapper.vm.unanimatedElements.length).toBe(0);
     });
 
-    // TODO: check all combinations
-    it('should correctly set marquee initial position', () => {
+    it('duplicate slots as necessary if {repeat: true}', async () => {
+        wrapper.setProps({repeat: true});
+        await Vue.nextTick();
+        expect(wrapper.vm.$data.repeatNum).toBe(5);
+        expect(wrapper.vm.animatedElements.length).toBe(1);
+        expect(wrapper.vm.unanimatedElements.length).toBe(4);
+    });
+
+    it('correctly set marquee initial position for {direction: column, reverse: false}', () => {
+        wrapper.setProps({direction: 'column', reverse: false});
+        const marqueeElement = wrapper.find({ name: 'dynamic-marquee-element' });
+        const elStyle = marqueeElement.attributes('style');
+        expect(elStyle).toEqual(expect.stringContaining('bottom: 100%'));
+    });
+
+    it('correctly set marquee initial position for {direction: column, reverse: true}', () => {
+        wrapper.setProps({direction: 'column', reverse: true});
+        const marqueeElement = wrapper.find({ name: 'dynamic-marquee-element' });
+        const elStyle = marqueeElement.attributes('style');
+        expect(elStyle).toEqual(expect.stringContaining('top: 100%'));
+    });
+
+    it('correctly set marquee initial position for {direction: row, reverse: true}', () => {
+        wrapper.setProps({direction: 'row', reverse: true});
+        const marqueeElement = wrapper.find({ name: 'dynamic-marquee-element' });
+        const elStyle = marqueeElement.attributes('style');
+        expect(elStyle).toEqual(expect.stringContaining('left: 100%'));
+    });
+
+
+    it('correctly set marquee initial position for {direction: row, reverse: false}', () => {
+        wrapper.setProps({direction: 'row', reverse: false});
         const marqueeElement = wrapper.find({ name: 'dynamic-marquee-element' });
         const elStyle = marqueeElement.attributes('style');
         expect(elStyle).toEqual(expect.stringContaining('right: 100%'));
     });
 
 
-    it('should call raf', () => {
-
-        const furthestElement = wrapper.vm.animatedElements[0];
+    it('call raf', () => {
         rafStub.step();
         expect(spyRaf).toBeCalled();
     });
 
-    it('should progress correctly on speed:{type: "duration"}', () => {
+    it('progress correctly on speed:{type: "duration"}', () => {
         rafStub.step();
         const furthestElement = wrapper.vm.animatedElements[0];
         const currentProgress = furthestElement.progress;
-        console.log(currentProgress);
         rafStub.step(6);
         expect(spyRaf).toHaveBeenCalledTimes(9);
         const totalDistance = wrapper.vm.wrapperDimension + wrapper.vm.marqueeDimension;
@@ -75,7 +104,7 @@ describe('DynamicMarquee', () => {
         expect(furthestElement.progress).toBeCloseTo(expectedProgress + currentProgress);
     });
 
-    it('should progress correctly on speed:{type: "pps"}', () => {
+    it('progress correctly on speed:{type: "pps"}', () => {
         wrapper.setProps({
             speed: {
                 type: 'pps',
@@ -89,25 +118,42 @@ describe('DynamicMarquee', () => {
         expect(firstElement.progress).toBeCloseTo(currentProgress + 1);
     });
 
-    it('should reanimate elements', () => {
+    it('progress correct direction on {reverse: false}', () => {
+        const progressArr = wrapper.vm.animatedElements.map((el) => Math.floor(el.progress));
+        const correctDirection = progressArr.every((el) => el >= 0);
+        expect(correctDirection).toBe(true);
+    });
+
+    it('progress correct direction on {reverse: true}', async () => {
+        wrapper.setProps({reverse: true});
+        await Vue.nextTick();
+        const progressArr = wrapper.vm.animatedElements.map((el) => Math.floor(el.progress));
+        const correctDirection = progressArr.every((el) => el <= 0);
+        expect(correctDirection).toBe(true);
+    });
+
+    it('reanimate elements', async () => {
         wrapper.setProps({
             speed: {
                 type: 'duration',
                 number: 1000,
             },
+            reverse: false,
         });
+        await Vue.nextTick();
+
         rafStub.step(100);
         expect(wrapper.vm.animatedElements.length).toBeGreaterThanOrEqual(4);
     });
 
-    it('elements should not exceed wrapper completely', () => {
+    it('elements not exceed wrapper completely', () => {
         const progressArr = wrapper.vm.animatedElements.map((el) => Math.floor(el.progress));
         const exceedsNum = wrapper.vm.wrapperDimension + wrapper.vm.wrapperDimension;
         const exceeds = progressArr.some((el) => el > exceedsNum);
         expect(exceeds).toBe(false);
     });
 
-    it('should keep repeatMargin distance between animated elements', () => {
+    it('keep repeatMargin distance between animated elements', () => {
         const progressArr = wrapper.vm.animatedElements.map((el) => Math.floor(el.progress));
         let lastVal = progressArr[0];
         let wrongMargin = false;
@@ -121,7 +167,7 @@ describe('DynamicMarquee', () => {
         expect(wrongMargin).toBe(false);
     });
 
-    it('should pause when paused programmaticly', () => {
+    it('pause when paused programmaticly', () => {
         const before = JSON.stringify(wrapper.vm.animatedElements);
         wrapper.setProps({ pause: true });
         rafStub.step();
@@ -135,7 +181,7 @@ describe('DynamicMarquee', () => {
 
     });
 
-    it('should pause on mouseenter and unpause on mouseleave', () => {
+    it('pause on mouseenter and unpause on mouseleave', () => {
         const before = JSON.stringify(wrapper.vm.animatedElements);
         const rootDiv = wrapper.find('div');
         rootDiv.trigger('mouseenter');
@@ -150,7 +196,7 @@ describe('DynamicMarquee', () => {
 
     });
 
-    it('should not pause on mouseenter when hoverPause = false', () => {
+    it('not pause on mouseenter when {hoverPause: false}', () => {
         wrapper.setProps({
             hoverPause: false,
         });

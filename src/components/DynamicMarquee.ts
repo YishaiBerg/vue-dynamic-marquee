@@ -331,27 +331,46 @@ export default Vue.extend({
         .marqueeElement as HTMLElement;
       this.resizeObserver!.observe(this.marqueeElement!);
     },
+    resetAnimation() {
+      this.pauseInner = true;
+      if (this.resizeObserver) {
+        this.resizeObserver.disconnect();
+      }
+      this.animatedElements = [{ progress: 0, id: 0 }];
+      this.unanimatedElements = [];
+      this.initialSetup();
+      this.pauseInner = false;
+    },
+    initialSetup() {
+      this.calcDimensions();
+      this.setWrapperDirection();
+      if (this.repeat) {
+        this.repeatNum = this.calcRepeatNum();
+      }
+      this.initialAnimationData();
+      if (!this.testData.inTest) {
+        this.setResizeObserver();
+      }
+    },
+    fireAnimation(currentTime: number) {
+        const longPause = currentTime - this.lastTime > 100;
+        if (!this.pause && !this.pauseInner && !longPause) {
+          this.calcTranslation(currentTime);
+        }
+        this.updateLastTime(currentTime);
+        requestAnimationFrame(this.fireAnimation);
+    },
+  },
+  watch: {
+    repeat: 'resetAnimation',
+    repeatMargin: 'resetAnimation',
+    direction: 'resetAnimation',
+    reverse: 'resetAnimation',
   },
   async mounted() {
     await this.$nextTick();
-    this.calcDimensions();
-    this.setWrapperDirection();
-    if (this.repeat) {
-      this.repeatNum = this.calcRepeatNum();
-    }
-    this.initialAnimationData();
-    if (!this.testData.inTest) {
-      this.setResizeObserver();
-    }
-    const translateMarquee = (currentTime: number) => {
-      const longPause = currentTime - this.lastTime > 100;
-      if (!this.pause && !this.pauseInner && !longPause) {
-        this.calcTranslation(currentTime);
-      }
-      this.updateLastTime(currentTime);
-      requestAnimationFrame(translateMarquee);
-    };
-    requestAnimationFrame(translateMarquee);
+    this.initialSetup();
+    requestAnimationFrame(this.fireAnimation);
   },
   beforeDestroy() {
     if (this.resizeObserver) {
