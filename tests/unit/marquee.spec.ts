@@ -85,7 +85,6 @@ describe('DynamicMarquee', () => {
         rafStub.step();
         const firstElement = wrapper.vm.animatedElements[wrapper.vm.animatedElements.length - 1];
         const currentProgress = firstElement.progress;
-        console.log(currentProgress);
         rafStub.step(60);
         expect(firstElement.progress).toBeCloseTo(currentProgress + 1);
     });
@@ -98,7 +97,6 @@ describe('DynamicMarquee', () => {
             },
         });
         rafStub.step(100);
-        console.log(wrapper.html())
         expect(wrapper.vm.animatedElements.length).toBeGreaterThanOrEqual(4);
     });
 
@@ -149,6 +147,20 @@ describe('DynamicMarquee', () => {
         rafStub.step();
         const afterNoPause = JSON.stringify(wrapper.vm.animatedElements);
         expect(after).not.toBe(afterNoPause);
+
+    });
+
+    it('should not pause on mouseenter when hoverPause = false', () => {
+        wrapper.setProps({
+            hoverPause: false,
+        });
+        const before = JSON.stringify(wrapper.vm.animatedElements);
+        const rootDiv = wrapper.find('div');
+        rootDiv.trigger('mouseenter');
+        rafStub.step();
+        const after = JSON.stringify(wrapper.vm.animatedElements);
+        expect(before).not.toBe(after);
+
 
         wrapper.destroy();
     });
