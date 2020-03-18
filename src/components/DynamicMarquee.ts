@@ -37,7 +37,7 @@ export default Vue.extend({
     },
     repeatMargin: {
       type: Number,
-      default: 5,
+      default: 10,
     },
     hoverPause: {
       type: Boolean,
