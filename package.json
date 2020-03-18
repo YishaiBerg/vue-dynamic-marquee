@@ -1,7 +1,13 @@
 {
   "name": "vue-marquee-component",
   "version": "0.1.0",
-  "private": true,
+  "description": "Marquee component for Vue - repeatedly translate content across wrapper. Completely responsive to after-render changes with many options to customize.",
+  "keywords": ["vue", "marquee", "responsive", "translate"],
+  "license": "MIT",
+  "author": {
+    "name": "Yishai Berg",
+    "email": "ymb123@gmail.com"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",

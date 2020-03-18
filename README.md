@@ -11,7 +11,7 @@ Alternatively the component can be delivered via CDN from [jsdelivr](https://www
 register globaly
 
     //in main.js
-    import DynamicMarquee from vue-dynamic-marquee;
+    import DynamicMarquee from 'vue-dynamic-marquee';
     Vue.use('DynamicMarquee')
  or import locally
 		
@@ -24,7 +24,7 @@ register globaly
       </div>
     </template>
 
-	import DynamicMarquee from vue-dynamic-marquee;
+	import DynamicMarquee from 'vue-dynamic-marquee';
 ## Props
 | Prop  | Type  |  Default | Explanation 
 |:--:|:--:|:--:|--|
