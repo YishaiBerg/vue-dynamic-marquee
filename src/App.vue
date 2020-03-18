@@ -27,7 +27,7 @@ export default Vue.extend({
   data() {
     return {
       liNum: 1,
-      notZero: false
+      notZero: false,
     };
   },
 });

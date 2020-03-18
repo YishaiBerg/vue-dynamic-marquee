@@ -1,9 +1,7 @@
-// TODO: take care of this
-///<reference path="../../declarations.d.ts" />
 import { mount } from '@vue/test-utils';
 import DynamicMarquee from '../../src/components/DynamicMarquee';
-// import '../../declarations.d.ts';
-import createStub from 'raf-stub';
+import '../../declarations';
+import {createStub} from 'raf-stub';
 import Vue from 'vue';
 
 let rafStub: any;
