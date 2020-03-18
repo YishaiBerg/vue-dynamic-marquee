@@ -320,7 +320,9 @@ export default Vue.extend({
                 this.deletedElements.push(el.id);
               }
             }
-            await this.$nextTick();
+            if (!this.testData.inTest) {
+              await this.$nextTick();
+            }
           }
         }
         this.repeatNum = newRepeatNum;

@@ -2,7 +2,7 @@
   <div id="app">
     <div class="outer-wrapper">
       <dynamic-marquee direction="column" reverse>
-        <ul>
+        <ul v-if="!notZero">
           <li v-for="i in liNum" :key="i">Item {{i}}</li>
         </ul>
       </dynamic-marquee>
@@ -10,6 +10,7 @@
     <div class="btns">
       <button @click="liNum++">+</button>
       <button @click="liNum--">-</button>
+    <button @click="notZero = !notZero">0</button>
     </div>
   </div>
 </template>
@@ -26,6 +27,7 @@ export default Vue.extend({
   data() {
     return {
       liNum: 1,
+      notZero: false
     };
   },
 });
