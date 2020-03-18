@@ -79,6 +79,7 @@ export default Vue.extend({
       resizeElementId: 0,
       resizeObserver: null as ResizeObserver | null,
       deletedElements: [] as number[],
+      marqueeNoDimension: false,
       testData: {
         inTest: false,
         wrapperDimension: 120,
@@ -269,13 +270,20 @@ export default Vue.extend({
       this.addOrRemoveElements();
     },
     onMarqueeElementResize(newDimension: number) {
-      const difference = this.marqueeDimension - newDimension;
-      for (let i = this.animatedElements.length - 1; i > 0; i--) {
-        this.animatedElements[i].progress += this.signNum(difference) * i;
-        this.moveMinusToUnanimated(i);
+      if (!newDimension) {
+        this.marqueeNoDimension = true;
+      } else if (this.marqueeNoDimension) {
+        this.resetAnimation();
+        this.marqueeNoDimension = false;
+      } else {
+        const difference = this.marqueeDimension - newDimension;
+        for (let i = this.animatedElements.length - 1; i > 0; i--) {
+          this.animatedElements[i].progress += this.signNum(difference) * i;
+          this.moveMinusToUnanimated(i);
+        }
+        this.marqueeDimension = newDimension;
+        this.addOrRemoveElements();
       }
-      this.marqueeDimension = newDimension;
-      this.addOrRemoveElements();
     },
     moveMinusToUnanimated(index: number) {
       const beyondWrapper =
@@ -364,7 +372,7 @@ export default Vue.extend({
     },
     fireAnimation(currentTime: number) {
       const longPause = currentTime - this.lastTime > 100;
-      if (!this.pause && !this.pauseInner && !longPause) {
+      if (!this.pause && !this.pauseInner && !longPause && !this.marqueeNoDimension) {
         this.calcTranslation(currentTime);
       }
       this.updateLastTime(currentTime);

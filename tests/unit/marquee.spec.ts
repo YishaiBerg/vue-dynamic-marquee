@@ -55,36 +55,53 @@ describe('DynamicMarquee', () => {
         expect(wrapper.vm.unanimatedElements.length).toBe(4);
     });
 
-    it('correctly set marquee initial position for {direction: column, reverse: false}', () => {
-        wrapper.setProps({ direction: 'column', reverse: false });
+    describe('Initial Position', () => {
         const marqueeElement = wrapper.find({ name: 'dynamic-marquee-element' });
-        const elStyle = marqueeElement.attributes('style');
-        expect(elStyle).toEqual(expect.stringContaining('bottom: 100%'));
+
+        it('correctly set marquee initial position for {direction: column, reverse: false}', () => {
+            wrapper.setProps({ direction: 'column', reverse: false });
+            const elStyle = marqueeElement.attributes('style');
+            expect(elStyle).toEqual(expect.stringContaining('bottom: 100%'));
+        });
+
+        it('correctly set marquee initial position for {direction: column, reverse: true}', () => {
+            wrapper.setProps({ direction: 'column', reverse: true });
+            const elStyle = marqueeElement.attributes('style');
+            expect(elStyle).toEqual(expect.stringContaining('top: 100%'));
+        });
+
+        it('correctly set marquee initial position for {direction: row, reverse: true} rtl', () => {
+            wrapper.setProps({ direction: 'row', reverse: true });
+            wrapper.setData({ wrapperDirection: 'rtl' });
+            const elStyle = marqueeElement.attributes('style');
+            expect(elStyle).toEqual(expect.stringContaining('right: 100%'));
+        });
+
+
+        it('correctly set marquee initial position for {direction: row, reverse: false} rtl', () => {
+            wrapper.setProps({ direction: 'row', reverse: false });
+            wrapper.setData({ wrapperDirection: 'rtl' });
+            const elStyle = marqueeElement.attributes('style');
+            expect(elStyle).toEqual(expect.stringContaining('left: 100%'));
+        });
+
+        it('correctly set marquee initial position for {direction: row, reverse: true} ltr', () => {
+            wrapper.setData({ wrapperDirection: 'ltr' });
+            wrapper.setProps({ direction: 'row', reverse: true });
+            const elStyle = marqueeElement.attributes('style');
+            expect(elStyle).toEqual(expect.stringContaining('left: 100%'));
+        });
+
+
+        it('correctly set marquee initial position for {direction: row, reverse: false} ltr', () => {
+            wrapper.setData({ wrapperDirection: 'ltr' });
+            wrapper.setProps({ direction: 'row', reverse: false });
+            const elStyle = marqueeElement.attributes('style');
+            expect(elStyle).toEqual(expect.stringContaining('right: 100%'));
+        });
     });
 
-    it('correctly set marquee initial position for {direction: column, reverse: true}', () => {
-        wrapper.setProps({ direction: 'column', reverse: true });
-        const marqueeElement = wrapper.find({ name: 'dynamic-marquee-element' });
-        const elStyle = marqueeElement.attributes('style');
-        expect(elStyle).toEqual(expect.stringContaining('top: 100%'));
-    });
-
-    it('correctly set marquee initial position for {direction: row, reverse: true}', () => {
-        wrapper.setProps({ direction: 'row', reverse: true });
-        const marqueeElement = wrapper.find({ name: 'dynamic-marquee-element' });
-        const elStyle = marqueeElement.attributes('style');
-        expect(elStyle).toEqual(expect.stringContaining('left: 100%'));
-    });
-
-
-    it('correctly set marquee initial position for {direction: row, reverse: false}', () => {
-        wrapper.setProps({ direction: 'row', reverse: false });
-        const marqueeElement = wrapper.find({ name: 'dynamic-marquee-element' });
-        const elStyle = marqueeElement.attributes('style');
-        expect(elStyle).toEqual(expect.stringContaining('right: 100%'));
-    });
-
-
+    
     it('call raf', () => {
         rafStub.step();
         expect(spyRaf).toBeCalled();
