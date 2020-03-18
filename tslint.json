@@ -13,6 +13,7 @@
     "interface-name": false,
     "no-consecutive-blank-lines": false,
     "object-literal-sort-keys": false,
+    "object-literal-key-quotes": [true, "as-needed"],
     "ordered-imports": false,
     "quotemark": [true, "single"]
   }

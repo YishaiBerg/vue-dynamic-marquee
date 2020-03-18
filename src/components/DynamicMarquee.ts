@@ -257,20 +257,25 @@ export default Vue.extend({
       this.pauseInner = true;
       entries.forEach((entry) => {
         if (entry.target.isEqualNode(this.$refs.wrapper as Node)) {
-          this.calcWrapperDimension();
-          this.addOrRemoveElements();
+          this.onWrapperResize(entry.contentRect[this.dimension]);
         } else if (entry.target.isEqualNode(this.marqueeElement)) {
-          const newDimension = entry.contentRect[this.dimension];
-          const difference = this.marqueeDimension - newDimension;
-          for (let i = this.animatedElements.length - 1; i > 0; i--) {
-            this.animatedElements[i].progress += this.signNum(difference) * i;
-            this.moveMinusToUnanimated(i);
-          }
-          this.marqueeDimension = newDimension;
-          this.addOrRemoveElements();
+          this.onMarqueeElementResize(entry.contentRect[this.dimension]);
         }
         this.pauseInner = false;
       });
+    },
+    onWrapperResize(newDimension: number) {
+      this.wrapperDimension = newDimension;
+      this.addOrRemoveElements();
+    },
+    onMarqueeElementResize(newDimension: number) {
+      const difference = this.marqueeDimension - newDimension;
+      for (let i = this.animatedElements.length - 1; i > 0; i--) {
+        this.animatedElements[i].progress += this.signNum(difference) * i;
+        this.moveMinusToUnanimated(i);
+      }
+      this.marqueeDimension = newDimension;
+      this.addOrRemoveElements();
     },
     moveMinusToUnanimated(index: number) {
       const beyondWrapper =
@@ -299,8 +304,13 @@ export default Vue.extend({
         } else if (difference < 0) {
           for (let i = 0; i > difference; i--) {
             if (this.unanimatedElements.length) {
-              this.updateObservedElement(this.unanimatedElements.length - 1);
-              this.unanimatedElements.pop();
+              if (!this.testData.inTest) {
+                this.updateObservedElement(this.unanimatedElements.length - 1);
+              }
+              const el = this.unanimatedElements.pop();
+              if (el) {
+                this.deletedElements.push(el.id);
+              }
             }
           }
         }
@@ -353,12 +363,12 @@ export default Vue.extend({
       }
     },
     fireAnimation(currentTime: number) {
-        const longPause = currentTime - this.lastTime > 100;
-        if (!this.pause && !this.pauseInner && !longPause) {
-          this.calcTranslation(currentTime);
-        }
-        this.updateLastTime(currentTime);
-        requestAnimationFrame(this.fireAnimation);
+      const longPause = currentTime - this.lastTime > 100;
+      if (!this.pause && !this.pauseInner && !longPause) {
+        this.calcTranslation(currentTime);
+      }
+      this.updateLastTime(currentTime);
+      requestAnimationFrame(this.fireAnimation);
     },
   },
   watch: {
@@ -366,6 +376,12 @@ export default Vue.extend({
     repeatMargin: 'resetAnimation',
     direction: 'resetAnimation',
     reverse: 'resetAnimation',
+    'testData.wrapperDimension'(newValue) {
+      this.onWrapperResize(newValue);
+    },
+    'testData.marqueeDimension'(newValue) {
+      this.onMarqueeElementResize(newValue);
+    },
   },
   async mounted() {
     await this.$nextTick();
