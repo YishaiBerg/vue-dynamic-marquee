@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import DynamicMarquee from '../../src/components/DynamicMarquee';
-import '../../declarations';
-import {createStub} from 'raf-stub';
+import '../../declarations.d';
+import createStub from 'raf-stub';
 import Vue from 'vue';
 
 let rafStub: any;
