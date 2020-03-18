@@ -294,7 +294,7 @@ export default Vue.extend({
         this.unanimatedElements.push(toUnanimate);
       }
     },
-    addOrRemoveElements() {
+    async addOrRemoveElements() {
       if (this.repeat) {
         const newRepeatNum = this.calcRepeatNum();
         const difference = newRepeatNum - this.repeatNum;
@@ -320,6 +320,7 @@ export default Vue.extend({
                 this.deletedElements.push(el.id);
               }
             }
+            await this.$nextTick();
           }
         }
         this.repeatNum = newRepeatNum;
