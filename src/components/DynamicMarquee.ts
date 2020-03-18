@@ -247,7 +247,13 @@ export default Vue.extend({
         );
       }
     },
-    setResizeObserver() {
+    async setResizeObserver() {
+      if ('ResizeObserver' in window === false) {
+        // Loads polyfill asynchronously, only if required.
+        const module = await import('@juggle/resize-observer');
+        // @ts-ignore
+        window.ResizeObserver = module.ResizeObserver;
+      }
       this.resizeObserver = new ResizeObserver(this.onResize);
       this.resizeObserver.observe(this.$refs.wrapper as HTMLElement);
       if (this.marqueeElement) {
