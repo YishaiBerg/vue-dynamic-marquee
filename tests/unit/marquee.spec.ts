@@ -300,10 +300,53 @@ describe('DynamicMarquee', () => {
             await Vue.nextTick();
             expect(wrapper.vm.repeatNum).toBe(9);
         });
+
         it('updates deletedItems array correctly', () => {
             // * lastId is zero based
             expect(wrapper.vm.lastId + 1 - wrapper.vm.allElements.length)
                 .toBe(wrapper.vm.deletedElements.length);
+        });
+
+        it('it stops animation if marqueeElement dimension = 0', async () => {
+            const before = JSON.stringify(wrapper.vm.animatedElements);
+
+            wrapper.setData({
+                testData: {
+                    inTest: true,
+                    wrapperDimension: 15,
+                    marqueeDimension: 0,
+                    wrapperDirection: 'ltr',
+                },
+            });
+            await Vue.nextTick();
+
+            rafStub.step(3);
+
+            const after = JSON.stringify(wrapper.vm.animatedElements);
+
+            expect(before).toBe(after);
+        });
+
+        it('it restarts animation after marqueeElement dimension > 0', async () => {
+
+            wrapper.setData({
+                testData: {
+                    inTest: true,
+                    wrapperDimension: 15,
+                    marqueeDimension: 5,
+                    wrapperDirection: 'ltr',
+                },
+            });
+            await Vue.nextTick();
+            expect(wrapper.vm.animatedElements.length).toBe(1);
+            expect(wrapper.vm.animatedElements[0].progress).toBe(0);
+            expect(wrapper.vm.animatedElements[0].id).toBe(0);
+
+            const before = JSON.stringify(wrapper.vm.animatedElements);
+            rafStub.step(3);
+            const after = JSON.stringify(wrapper.vm.animatedElements);
+
+            expect(before).not.toBe(after);
             wrapper.destroy();
         });
     });
