@@ -12,7 +12,7 @@ register globaly
 
     //in main.js
     import DynamicMarquee from 'vue-dynamic-marquee';
-    Vue.use('DynamicMarquee')
+    Vue.component('dynamic-marquee', DynamicMarquee)
  or import locally
 		
 
