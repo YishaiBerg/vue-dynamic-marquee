@@ -1,6 +1,6 @@
 {
   "name": "vue-dynamic-marquee",
-  "version": "0.1.2",
+  "version": "0.1.5",
   "description": "Marquee component for Vue - repeatedly translate content across wrapper. Completely responsive to after-render changes with many options to customize.",
   "keywords": [
     "vue",
@@ -13,7 +13,11 @@
     "type": "git",
     "url": "https://github.com/YishaiBerg/vue-dynamic-marquee"
   },
-  "browser": "./dist/vue-dynamic-marquee.common.js",
+  "main": "./dist/vue-dynamic-marquee.common.js",
+  "files": [
+    "dist/*"
+  ],
+  "types": "./dist/src/components/DynamicMarquee.d.ts",
   "license": "MIT",
   "author": {
     "name": "Yishai Berg",
