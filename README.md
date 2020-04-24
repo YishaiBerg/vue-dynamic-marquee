@@ -2,6 +2,10 @@
 
 [![Build Status](https://travis-ci.com/YishaiBerg/vue-dynamic-marquee.svg?branch=master)](https://travis-ci.com/YishaiBerg/vue-dynamic-marquee)
 
+## Playground and Demo
+
+A neat docs, demo and playground site can be found on <https://yishaiberg.github.io/dynamic-marquee-playground/>. The site code is open source if you will like to make any improvements.
+
 ## Installation
 
 ```
