@@ -1,4 +1,7 @@
 # Vue Dynamic Marquee
+
+[![Build Status](https://travis-ci.com/YishaiBerg/vue-dynamic-marquee.svg?branch=master)](https://travis-ci.com/YishaiBerg/vue-dynamic-marquee)
+
 ## Installation
 
 ```
@@ -23,7 +26,8 @@ register globally
     //in main.js
     import DynamicMarquee from 'vue-dynamic-marquee';
     Vue.component('dynamic-marquee', DynamicMarquee);
-	```
+```
+
  or import locally
 		
 ```html
