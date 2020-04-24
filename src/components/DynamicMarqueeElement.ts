@@ -23,6 +23,7 @@ export default Vue.extend({
       },
     },
   },
+
   computed: {
 
     axis(): string {
@@ -34,6 +35,14 @@ export default Vue.extend({
           return 'Y';
       }
     },
+
+    widthOrHeight() {
+      if (this.direction === 'row') {
+          return 'height';
+      }
+      return 'width';
+  },
+
     initialPosition(): object {
       if (this.direction === 'row') {
         if (
@@ -63,6 +72,7 @@ export default Vue.extend({
         ref: 'marqueeElement',
         style: {
           position: 'absolute',
+          [this.widthOrHeight]: '100%',
           ...this.initialPosition,
           ...this.transform,
         },

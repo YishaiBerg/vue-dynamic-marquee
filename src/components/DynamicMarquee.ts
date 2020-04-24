@@ -1,5 +1,4 @@
 
-/// <reference types="resize-observer-browser" />
 import Vue, { VNode } from 'vue';
 import DynamicMarqueeElement from './DynamicMarqueeElement';
 
@@ -75,7 +74,7 @@ export default Vue.extend({
       ] as ProgressElement[],
       unanimatedElements: [] as ProgressElement[],
       pauseInner: false,
-      lastTime: NaN,
+      lastTime: 0,
       resizeElementId: 0,
       resizeObserver: null as ResizeObserver | null,
       deletedElements: [] as number[],
@@ -143,7 +142,6 @@ export default Vue.extend({
       return timesInWrapper + 1;
     },
     async initialAnimationData() {
-      this.lastTime = performance.now();
       await this.$nextTick();
       for (let i = 1; i < this.repeatNum; i++) {
         this.unanimatedElements.push({
@@ -403,6 +401,7 @@ export default Vue.extend({
   async mounted() {
     await this.$nextTick();
     this.initialSetup();
+    await this.$nextTick();
     requestAnimationFrame(this.fireAnimation);
   },
   beforeDestroy() {
