@@ -1,33 +1,46 @@
 # Vue Dynamic Marquee
 ## Installation
 
+```
 	yarn add vue-dynamic-marquee
 	// or 
 	npm i vue-dynamic-marquee
+```
+
 Alternatively the component can be delivered via CDN 
 
+```html
     <script src="https://cdn.jsdelivr.net/npm/vue-dynamic-marquee@0.x/dist/vue-dynamic-marquee.umd.min.js"></script>
     <script>
 	    Vue.component('dynamic-marquee', window['vue-dynamic-marquee'])
     </script>
+```
 
 ## Usage
-register globaly
+register globally
 
+```javascript
     //in main.js
     import DynamicMarquee from 'vue-dynamic-marquee';
     Vue.component('dynamic-marquee', DynamicMarquee);
+	```
  or import locally
 		
-	
-	
-	<div>
-		<dynamic-marquee>
-		//your content to be animated
-		</dynamic-marquee>
-	</div>
-	
+```html
+	<template>	
+		<div>
+			<dynamic-marquee>
+			//your content to be animated
+			</dynamic-marquee>
+		</div>
+	</template>
+
+	<script>
 	import DynamicMarquee from 'vue-dynamic-marquee';
+	</script>
+```
+The slot contents will translate across the component's immediate wrapper. Take note that since the slot will be absolutly positioned, the wrapper's width and height cannot rely on the contents.
+
 ## Props
 | Prop  | Type  |  Default | Explanation 
 |:--:|:--:|:--:|--|
@@ -40,10 +53,9 @@ register globaly
 | pause | boolean | false | Use to programmaticlly pause animation.     
 
 ## Responsiveness
-The component should be able to accomodate for any changes in wrapper or slot content dimensions. This is accomplished thanks to the [ResizeObserver Api](https://developer.mozilla.org/en-US/docs/Web/API/Resize_Observer_API).  **Only** if the component detects the browser does not support ResizeObserver it will async load a [polyfill](https://github.com/juggle/resize-observer).
+The component should be able to accomodate for any changes in wrapper or slot content dimensions that take place on the fly. Number of times to repeat slots will be recalculated, and margin between them will be unharmed. This is accomplished thanks to the [ResizeObserver Api](https://developer.mozilla.org/en-US/docs/Web/API/Resize_Observer_API).  **Only** if the component detects the browser does not support ResizeObserver it will async load a [polyfill](https://github.com/juggle/resize-observer).
 
-## Coming Soon
+## Author
 
- - Demo and playground page.
- - React version.
+© [Yishai Berg](ymb123@gmail.com) <br>
  Feature requests and PR's are very much welcomed.

@@ -10,7 +10,6 @@
     <div class="btns">
       <button @click="liNum++">+</button>
       <button @click="liNum--">-</button>
-    <button @click="notZero = !notZero">0</button>
     </div>
   </div>
 </template>
@@ -27,7 +26,6 @@ export default Vue.extend({
   data() {
     return {
       liNum: 1,
-      notZero: false,
     };
   },
 });
