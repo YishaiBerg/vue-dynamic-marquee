@@ -4,7 +4,7 @@
 
 ## Playground and Demo
 
-A neat docs, demo and playground site can be found on <https://yishaiberg.github.io/dynamic-marquee-playground/>. The site code is open source if you will like to make any improvements.
+A neat docs, demo and playground site can be found on <https://yishaiberg.github.io/dynamic-marquee-playground/>. The site code is open source if you would like to make any improvements.
 
 ## Installation
 
@@ -47,7 +47,7 @@ register globally
 	import DynamicMarquee from 'vue-dynamic-marquee';
 	</script>
 ```
-The slot contents will translate across the component's immediate wrapper. Take note that since the slot will be absolutly positioned, the wrapper's width and height cannot rely on the contents.
+The slot contents will translate across the component's immediate wrapper. Take note that since the slot will be absolutely positioned, the wrapper's width and height cannot rely on the contents.
 
 ## Props
 | Prop  | Type  |  Default | Explanation 
@@ -61,7 +61,7 @@ The slot contents will translate across the component's immediate wrapper. Take 
 | pause | boolean | false | Use to programmaticlly pause animation.     
 
 ## Responsiveness
-The component should be able to accomodate for any changes in wrapper or slot content dimensions that take place on the fly. Number of times to repeat slots will be recalculated, and margin between them will be unharmed. This is accomplished thanks to the [ResizeObserver Api](https://developer.mozilla.org/en-US/docs/Web/API/Resize_Observer_API).  **Only** if the component detects the browser does not support ResizeObserver it will async load a [polyfill](https://github.com/juggle/resize-observer).
+The component should be able to accommodate for any changes in wrapper or slot content dimensions that take place on the fly. Number of times to repeat the slot will be recalculated, and the margin between them will be unharmed. This is accomplished thanks to the [ResizeObserver Api](https://developer.mozilla.org/en-US/docs/Web/API/Resize_Observer_API).  **Only** if the component detects that browser does not support ResizeObserver it will async load a [polyfill](https://github.com/juggle/resize-observer).
 
 ## Author
 
