@@ -1,6 +1,6 @@
 {
   "name": "vue-dynamic-marquee",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Marquee component for Vue - repeatedly translate content across wrapper. Completely responsive to after-render changes with many options to customize.",
   "author": {
     "name": "Yishai Berg",
